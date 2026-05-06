@@ -1976,7 +1976,7 @@ function det(i){
     ${_dl?`<span style="font-size:12px;font-weight:700;color:${_dlColor}">${_dl}</span>`:''}
   </div>
   <div class="pgrid">
-    ${efSelect('memTipo','Tipo de membresía',c.memTipo,['','3 Meses','6 Meses','1A','2A','Lifetime','Otro'])}
+    ${efSelect('memTipo','Tipo de membresía',c.memTipo,['3 Meses','6 Meses','12 Meses'])}
     ${efDate('memVence','Fecha de vencimiento',c.memVence)}
     ${efSelect('memInvit','Invitación de Skool',c.memInvit,['','Invitado','Pendiente','No aplica','Rechazó'])}
   </div>
