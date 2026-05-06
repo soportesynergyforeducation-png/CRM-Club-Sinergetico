@@ -2031,6 +2031,7 @@ function det(i){
     <div class="ph">
       <div class="pav">${ini}</div>
       <div><div class="pn" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(c.nombre)||'—'}${(function(){
+        if(c.acceso==='No'||c.acceso==='Revocado') return `<span class="sk-e" title="Acceso revocado">● Inactivo</span>`;
         const dFin=parseDate(finAccesoStr);
         if(!dFin) return '';
         const dias=daysUntil(dFin);
