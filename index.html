@@ -1978,7 +1978,7 @@ function det(i){
   <div class="pgrid">
     ${efSelect('memTipo','Tipo de membresía',c.memTipo,['3 Meses','6 Meses','12 Meses'])}
     ${efDate('memVence','Fecha de vencimiento',c.memVence)}
-    ${efSelect('memInvit','Invitación de Skool',c.memInvit,['','Invitado','Pendiente','No aplica','Rechazó'])}
+    ${efSelect('memInvit','Invitación de Skool',c.memInvit,['Invitacion enviada','Si','No'])}
   </div>
   ${c.skHoja?`<div style="margin-top:8px;padding:6px 10px;border-radius:8px;background:var(--s2);border:1px solid var(--bdr);font-size:11px;color:var(--t3)">
     📋 Sheet Skool: <strong style="color:var(--t2)">${esc(c.skHoja)}</strong>${c.skMem?` · ${esc(c.skMem)}`:''}${c.skEstado?` · ${esc(c.skEstado)}`:''}
