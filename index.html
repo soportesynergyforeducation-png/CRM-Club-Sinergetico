@@ -2976,10 +2976,17 @@ async function _analizarSkoolSync(){
   if(!body) return;
 
   try{
+    body.innerHTML=`<div style="text-align:center;padding:30px;color:var(--t3)"><div style="font-size:20px;margin-bottom:8px">🔄</div><div style="font-size:13px">Actualizando datos de membresías…</div></div>`;
+
+    // Forzar recarga fresca del webinarMap (ignorar caché) para tener membresías al día
+    localStorage.removeItem('crm_webinar_cache');
+    localStorage.removeItem('crm_webinar_cache_ts');
+    await loadWebinarMap();
+
     body.innerHTML=`<div style="text-align:center;padding:30px;color:var(--t3)"><div style="font-size:20px;margin-bottom:8px">🔍</div><div style="font-size:13px">Consultando BASE de Skool…</div></div>`;
 
     // Pausa para no saturar quota
-    await new Promise(function(r){setTimeout(r,2000);});
+    await new Promise(function(r){setTimeout(r,1000);});
 
     // ── Leer DOC2 (BASE de Skool) ──
     var DOC2_ID='1jMamczZDGYNdtAl7WIr3r-Le--IDSryaX23JQ30vjVI';
