@@ -2504,28 +2504,23 @@ function loadAllPSrc(){
 }
 
 function runTelSearch(){
-  // Usar contactos sin teléfono del CRM en vez del textarea
   var sinTel=all.filter(function(c){return c.correo&&!c.telefono;});
   var emails=sinTel.map(function(c){return c.correo.trim().toLowerCase();}).filter(Boolean);
   if(!emails.length){document.getElementById('tel-results').innerHTML='<div style="font-size:13px;color:var(--ok);padding:12px 0">✓ Todos los contactos tienen teléfono registrado.</div>';return;}
 
-  // Separar fuentes: primarias (las 4 webinars + presenciales) vs backup (último recurso)
   var BACKUP_ID='wb-backup';
   var primarySources=getAllPhoneSources().filter(function(s){return s.enabled!==false&&s.id!==BACKUP_ID;});
   var backupSource=getAllPhoneSources().find(function(s){return s.id===BACKUP_ID&&s.enabled!==false;});
 
-  // Mapa de candidatos primarios
   var primary={};
-  function addPrimary(email,phone,name,pais,source){
-    if(!email) return;
-    if(!primary[email]) primary[email]=[];
-    primary[email].push({phone:phone,name:name,pais:pais,source:source});
-  }
   primarySources.forEach(function(s){
-    (phoneCache[s.id]||[]).forEach(function(e){ addPrimary(e.email,e.phone,e.name,e.pais,e.source||s.label); });
+    (phoneCache[s.id]||[]).forEach(function(e){
+      if(!e.email) return;
+      if(!primary[e.email]) primary[e.email]=[];
+      primary[e.email].push({phone:e.phone,name:e.name,pais:e.pais,source:e.source||s.label});
+    });
   });
 
-  // Mapa de candidatos del backup
   var backupMap={};
   if(backupSource){
     (phoneCache[backupSource.id]||[]).forEach(function(e){
@@ -2535,16 +2530,16 @@ function runTelSearch(){
     });
   }
 
-  var rows=[], copyLines=[];
   var pendingSources=getAllPhoneSources().filter(function(s){
     return s.enabled!==false&&(!phoneCacheStatus[s.id]||phoneCacheStatus[s.id]==='loading');
   }).length;
 
+  var foundRows=[], notFoundRows=[];
+  window._telInsertMap={};
+
   emails.forEach(function(email){
-    // Primero buscar en fuentes primarias
     var candidates=primary[email]||[];
     var fromBackup=false;
-    // Si no hay nada en primarias, buscar en backup
     if(!candidates.filter(function(c){return c.phone&&c.phone.toString().trim();}).length && backupMap[email]){
       candidates=backupMap[email];
       fromBackup=true;
@@ -2552,71 +2547,66 @@ function runTelSearch(){
     var withPhone=candidates.filter(function(c){return c.phone&&c.phone.toString().trim();});
     if(withPhone.length>0){
       var best=withPhone.reduce(function(a,b){return phoneScore(b.phone)>phoneScore(a.phone)?b:a;});
-      var usaSources=['wb-usa-wjs','pres-usa'];
-      var impliedPais=best.pais;
-      if(!impliedPais||!getCountryInfo(impliedPais)){
-        var srcIsUSA=usaSources.some(function(id){
-          var s=getAllPhoneSources().find(function(x){return x.id===id;});
-          return s&&(phoneCache[s.id]||[]).some(function(e){return e.source===best.source;});
-        });
-        if(srcIsUSA) impliedPais='usa';
-      }
-      var fixed=fixPhone(best.phone, impliedPais);
-      var label=getCountryLabel(impliedPais, best.phone);
-      var displayLabel=label||'LATAM (no identificado)';
-      var labelColor=label?'var(--t2)':'var(--warn)';
+      var fixed=fixPhone(best.phone, best.pais);
       var srcColor=fromBackup?'rgba(240,168,90,0.15)':'rgba(90,219,166,0.1)';
       var srcTextColor=fromBackup?'var(--warn)':'var(--acc2)';
       var srcBorder=fromBackup?'rgba(240,168,90,0.3)':'rgba(90,219,166,0.2)';
       var srcBadge='<span style="font-size:10px;background:'+srcColor+';color:'+srcTextColor+';border:1px solid '+srcBorder+';padding:1px 7px;border-radius:10px;font-weight:600">'+(fromBackup?'📦 ':'')+esc(best.source)+'</span>';
-      rows.push('<div class="tel-row found" style="flex-wrap:wrap;gap:6px">'+
-        '<span class="tel-country" style="color:'+labelColor+'">'+esc(displayLabel)+'</span>'+
+      foundRows.push('<div class="tel-row found" style="flex-wrap:wrap;gap:6px">'+
         '<span class="tel-num">'+esc(fixed)+'</span>'+
+        '<span style="font-size:12px;color:var(--t3);flex:1">'+esc(email)+'</span>'+
         srcBadge+
-        (candidates.length>1?'<span style="font-size:10px;color:var(--t3);margin-left:auto">'+candidates.length+' fuentes</span>':'')+
       '</div>');
-      copyLines.push(fixed);
+      window._telInsertMap[email]=fixed;
     } else if(pendingSources>0){
-      rows.push('<div class="tel-row" style="opacity:.6">'+
+      notFoundRows.push('<div class="tel-row" style="opacity:.6">'+
         '<span class="spin" style="font-size:11px;display:inline-block;color:var(--acc);margin-right:6px">↻</span>'+
-        '<span style="font-size:12px;color:var(--t3)">Buscando en fuentes… &nbsp;'+esc(email)+'</span>'+
+        '<span style="font-size:12px;color:var(--t3)">'+esc(email)+'</span>'+
       '</div>');
-      copyLines.push('Buscando…\t'+email);
     } else {
-      rows.push('<div class="tel-row notfound">'+
-        '<span class="tel-notfound">✗ No encontrado</span>'+
+      notFoundRows.push('<div class="tel-row notfound">'+
+        '<span class="tel-notfound">✗</span>'+
         '<span style="font-size:12px;color:var(--t3);margin-left:8px">'+esc(email)+'</span>'+
       '</div>');
-      copyLines.push('No encontrado\t'+email);
+      window._telInsertMap[email]='x';
     }
   });
 
-  var found=rows.filter(function(r){return r.includes('tel-row found');}).length;
+  var found=foundRows.length;
+  var notFound=notFoundRows.length;
   var srcCount=getAllPhoneSources().filter(function(s){return s.enabled!==false;}).length;
-  var pendingNote=pendingSources>0?
-    ' &nbsp;·&nbsp; <span style="color:var(--warn)"><span class="spin" style="display:inline-block;font-size:10px">↻</span> '+pendingSources+' fuente(s) cargando</span>':'';
+  var pendingNote=pendingSources>0?' <span style="color:var(--warn);font-size:11px"><span class="spin" style="display:inline-block;font-size:10px">↻</span> '+pendingSources+' fuente(s) cargando…</span>':'';
 
-  // Guardar mapa de resultados para insertar
-  window._telInsertMap = {};
-  emails.forEach(function(email, i){
-    var row = rows[i] || '';
-    if(row.includes('tel-row found')){
-      // Extraer teléfono del copyLine
-      window._telInsertMap[email] = copyLines[i] || 'x';
-    } else if(!row.includes('cargando')){
-      window._telInsertMap[email] = 'x';
-    }
-  });
-
-  var insertBtn = pendingSources > 0 ? '' :
-    '<button class="saveb" style="margin-top:10px;width:100%" onclick="insertTelResults()">📥 Insertar teléfonos en CRM ('+(found)+' encontrados + '+(emails.length-found)+' como "x")</button>';
+  var insertDisabled=pendingSources>0?' disabled style="opacity:.5;cursor:not-allowed"':'';
+  var insertLabel=pendingSources>0?'⏳ Esperando fuentes…':'📥 Insertar teléfonos en CRM ('+found+' encontrados + '+notFound+' como "x")';
 
   document.getElementById('tel-results').innerHTML=
-    '<div style="font-size:11px;color:var(--t3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">'+
-    found+' encontrados de '+emails.length+' &nbsp;·&nbsp; '+srcCount+' fuente(s) consultada(s)'+pendingNote+'</div>'+
-    rows.join('')+
-    insertBtn+
-    '<textarea id="tel-copy-data" style="position:absolute;left:-9999px">'+copyLines.join('\n')+'</textarea>';
+    '<div style="font-size:11px;color:var(--t3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">'+
+    found+' encontrados · '+notFound+' no encontrados · '+srcCount+' fuente(s)'+pendingNote+'</div>'+
+    // Tabs
+    '<div style="display:flex;gap:0;margin-bottom:10px;border-bottom:1px solid var(--bdr)">'+
+      '<button id="tel-tab-found" onclick="telSwitchTab(\'found\')" style="padding:7px 16px;font-size:12px;font-weight:700;background:none;border:none;border-bottom:2px solid var(--acc);color:var(--acc);cursor:pointer;font-family:var(--font)">✓ Encontrados ('+found+')</button>'+
+      '<button id="tel-tab-notfound" onclick="telSwitchTab(\'notfound\')" style="padding:7px 16px;font-size:12px;font-weight:600;background:none;border:none;border-bottom:2px solid transparent;color:var(--t3);cursor:pointer;font-family:var(--font)">✗ No encontrados ('+notFound+')</button>'+
+    '</div>'+
+    '<div id="tel-tab-found-body">'+foundRows.join('')+'</div>'+
+    '<div id="tel-tab-notfound-body" style="display:none">'+notFoundRows.join('')+'</div>'+
+    '<button class="saveb" style="margin-top:12px;width:100%" onclick="insertTelResults()"'+insertDisabled+'>'+insertLabel+'</button>';
+}
+
+function telSwitchTab(tab){
+  var foundBtn=document.getElementById('tel-tab-found');
+  var nfBtn=document.getElementById('tel-tab-notfound');
+  var foundBody=document.getElementById('tel-tab-found-body');
+  var nfBody=document.getElementById('tel-tab-notfound-body');
+  if(tab==='found'){
+    foundBtn.style.cssText='padding:7px 16px;font-size:12px;font-weight:700;background:none;border:none;border-bottom:2px solid var(--acc);color:var(--acc);cursor:pointer;font-family:var(--font)';
+    nfBtn.style.cssText='padding:7px 16px;font-size:12px;font-weight:600;background:none;border:none;border-bottom:2px solid transparent;color:var(--t3);cursor:pointer;font-family:var(--font)';
+    foundBody.style.display='';nfBody.style.display='none';
+  } else {
+    nfBtn.style.cssText='padding:7px 16px;font-size:12px;font-weight:700;background:none;border:none;border-bottom:2px solid var(--acc);color:var(--acc);cursor:pointer;font-family:var(--font)';
+    foundBtn.style.cssText='padding:7px 16px;font-size:12px;font-weight:600;background:none;border:none;border-bottom:2px solid transparent;color:var(--t3);cursor:pointer;font-family:var(--font)';
+    nfBody.style.display='';foundBody.style.display='none';
+  }
 }
 
 async function insertTelResults(){
