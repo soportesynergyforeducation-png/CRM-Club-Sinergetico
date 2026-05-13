@@ -1222,8 +1222,7 @@ async function loadPhoneSource(src){
     phoneCache[src.id]=allData;
     phoneCacheStatus[src.id]='ok:'+allData.length;
     _refreshTelSrcUI();
-    var inp=document.getElementById('tel-input');
-    if(inp&&inp.value.trim()) runTelSearch();
+    if(document.getElementById('tp')&&document.getElementById('tp').classList.contains('show')) runTelSearch();
     return;
   }catch(e){
     phoneCacheStatus[src.id]='error:'+e.message;
@@ -1262,16 +1261,14 @@ function _buildSrcHTML(){
 function togglePSrc(i){
   getAllPhoneSources()[i].enabled=getAllPhoneSources()[i].enabled===false;
   savePhoneSources(); _refreshTelSrcUI();
-  var inp=document.getElementById('tel-input');
-  if(inp&&inp.value.trim()) runTelSearch();
+  if(document.getElementById('tp')&&document.getElementById('tp').classList.contains('show')) runTelSearch();
 }
 
 function removePSrc(i){
   var allSrc=getAllPhoneSources();var s=allSrc[i];if(s&&s.fixed){toast('⚠ Esta fuente es fija y no se puede eliminar');return;}var ui=extraPhoneSources.indexOf(s);if(ui>=0)extraPhoneSources.splice(ui,1);
   if(s){delete phoneCache[s.id];delete phoneCacheStatus[s.id];}
   savePhoneSources(); _refreshTelSrcUI();
-  var inp=document.getElementById('tel-input');
-  if(inp&&inp.value.trim()) runTelSearch();
+  if(document.getElementById('tp')&&document.getElementById('tp').classList.contains('show')) runTelSearch();
 }
 
 function showAddSrcForm(){
@@ -2450,11 +2447,11 @@ function openTelTool(){
   if(window.innerWidth<=768) closeSidebar();
   var srcLoaded=getAllPhoneSources().filter(function(s){return s.enabled!==false&&phoneCacheStatus[s.id]&&phoneCacheStatus[s.id]!=='idle';}).length;
   var srcPending=getAllPhoneSources().filter(function(s){return s.enabled!==false&&(!phoneCacheStatus[s.id]||phoneCacheStatus[s.id]==='idle');}).length;
+  var sinTel=all.filter(function(c){return c.correo&&!c.telefono;});
   document.getElementById('tc').innerHTML=`
     <button class="pc" onclick="cl('tp')">✕</button>
     <div style="font-size:17px;font-weight:700;color:var(--t1);margin-bottom:4px;letter-spacing:-.2px">📞 Buscador de teléfonos</div>
-    <div style="font-size:12px;color:var(--t3);margin-bottom:14px">Pega correos (uno por línea) — busca en el CRM y todas las fuentes configuradas</div>
-    <textarea class="tel-in" id="tel-input" placeholder="correo1@ejemplo.com&#10;correo2@ejemplo.com&#10;correo3@ejemplo.com…" oninput="runTelSearch()"></textarea>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:14px">${sinTel.length} contacto(s) sin teléfono en el CRM — buscando en todas las fuentes…</div>
     <div id="tel-results"></div>
     <div style="margin-top:18px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -2494,9 +2491,12 @@ function openTelTool(){
     </div>`;
   document.getElementById('tp').classList.add('show');
   _refreshTelSrcUI();
-  setTimeout(()=>document.getElementById('tel-input').focus(),100);
-  // Auto-cargar fuentes que no se han cargado aún
-  if(srcPending>0) loadAllPSrc();
+  // Auto-cargar fuentes que no se han cargado aún, luego buscar
+  if(srcPending>0){
+    loadAllPSrc();
+    // Esperar a que carguen antes de buscar (runTelSearch se llama desde loadPhoneSource al terminar)
+  }
+  runTelSearch();
 }
 
 function loadAllPSrc(){
@@ -2504,9 +2504,10 @@ function loadAllPSrc(){
 }
 
 function runTelSearch(){
-  var raw=document.getElementById('tel-input').value;
-  var emails=raw.split('\n').map(function(e){return e.trim().toLowerCase();}).filter(Boolean);
-  if(!emails.length){document.getElementById('tel-results').innerHTML='';return;}
+  // Usar contactos sin teléfono del CRM en vez del textarea
+  var sinTel=all.filter(function(c){return c.correo&&!c.telefono;});
+  var emails=sinTel.map(function(c){return c.correo.trim().toLowerCase();}).filter(Boolean);
+  if(!emails.length){document.getElementById('tel-results').innerHTML='<div style="font-size:13px;color:var(--ok);padding:12px 0">✓ Todos los contactos tienen teléfono registrado.</div>';return;}
 
   // Separar fuentes: primarias (las 4 webinars + presenciales) vs backup (último recurso)
   var BACKUP_ID='wb-backup';
@@ -2595,12 +2596,58 @@ function runTelSearch(){
   var pendingNote=pendingSources>0?
     ' &nbsp;·&nbsp; <span style="color:var(--warn)"><span class="spin" style="display:inline-block;font-size:10px">↻</span> '+pendingSources+' fuente(s) cargando</span>':'';
 
+  // Guardar mapa de resultados para insertar
+  window._telInsertMap = {};
+  emails.forEach(function(email, i){
+    var row = rows[i] || '';
+    if(row.includes('tel-row found')){
+      // Extraer teléfono del copyLine
+      window._telInsertMap[email] = copyLines[i] || 'x';
+    } else if(!row.includes('cargando')){
+      window._telInsertMap[email] = 'x';
+    }
+  });
+
+  var insertBtn = pendingSources > 0 ? '' :
+    '<button class="saveb" style="margin-top:10px;width:100%" onclick="insertTelResults()">📥 Insertar teléfonos en CRM ('+(found)+' encontrados + '+(emails.length-found)+' como "x")</button>';
+
   document.getElementById('tel-results').innerHTML=
     '<div style="font-size:11px;color:var(--t3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">'+
     found+' encontrados de '+emails.length+' &nbsp;·&nbsp; '+srcCount+' fuente(s) consultada(s)'+pendingNote+'</div>'+
     rows.join('')+
-    '<button class="copybtn" onclick="copyTelResults()">📋 Copiar resultados</button>'+
+    insertBtn+
     '<textarea id="tel-copy-data" style="position:absolute;left:-9999px">'+copyLines.join('\n')+'</textarea>';
+}
+
+async function insertTelResults(){
+  var map = window._telInsertMap || {};
+  var entries = Object.keys(map);
+  if(!entries.length){ toast('Sin resultados para insertar'); return; }
+  if(!WRITER_URL){ toast('⚠ WRITER_URL no configurada'); return; }
+
+  var btn = document.querySelector('#tel-results .saveb');
+  if(btn){ btn.disabled=true; btn.textContent='Insertando…'; }
+
+  var ok=0, errors=0;
+  for(var i=0; i<entries.length; i++){
+    var email = entries[i];
+    var phone = map[email];
+    try{
+      var params = new URLSearchParams();
+      params.append('secret', WRITER_SECRET);
+      params.append('correo', email);
+      params.append('campos', JSON.stringify({telefono: phone}));
+      await fetch(WRITER_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
+      // Actualizar caché local
+      var c = all.find(function(x){return (x.correo||'').toLowerCase()===email;});
+      if(c) c.telefono = phone;
+      ok++;
+    } catch(e){ errors++; }
+  }
+
+  toast('✓ '+ok+' teléfonos insertados en Sheets'+(errors?' · '+errors+' errores':''));
+  if(btn){ btn.disabled=false; btn.textContent='✓ Listo'; }
+  runTelSearch(); // refrescar para mostrar solo los que siguen sin tel
 }
 
 function copyTelResults(){
