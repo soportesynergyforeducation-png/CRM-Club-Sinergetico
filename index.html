@@ -786,15 +786,15 @@
       <div class="ni" data-v="skool-pronto"><span class="ni-icon">⏰</span> ≤15 días <span class="nb nb-w" id="nc-pronto">0</span></div>
       <div class="ni" data-v="skool-exp"><span class="ni-icon">💀</span> Vencida <span class="nb nb-e" id="nc-exp">0</span></div>
       <div class="ni" data-v="skool-ok"><span class="ni-icon">✓</span> Vigente</div>
+      <div class="ns">Herramientas</div>
+      <div class="ni" onclick="openTelTool()"><span class="ni-icon">📞</span> Buscador de teléfonos</div>
+      <div class="ni" onclick="openDiag()"><span class="ni-icon">🔍</span> Diagnóstico sync <span class="nb nb-w" id="nc-diag" style="display:none">!</span></div>
+      <div class="ni" onclick="openSkoolSync()"><span class="ni-icon">🎓</span> Sincronizar a Skool</div>
       <div class="ns">Más filtros</div>
       <div class="ni" data-v="renovar"><span class="ni-icon">↑</span> Por renovar</div>
       <div class="ni" data-v="feliz"><span class="ni-icon">☺</span> Customer Feliz</div>
       <div class="ni" data-v="telegram"><span class="ni-icon">✈</span> Sin Telegram</div>
       <div class="ni" data-v="encuesta"><span class="ni-icon">✓</span> Realizó encuesta</div>
-      <div class="ns">Herramientas</div>
-      <div class="ni" onclick="openTelTool()"><span class="ni-icon">📞</span> Buscador de teléfonos</div>
-      <div class="ni" onclick="openDiag()"><span class="ni-icon">🔍</span> Diagnóstico sync <span class="nb nb-w" id="nc-diag" style="display:none">!</span></div>
-      <div class="ni" onclick="openSkoolSync()"><span class="ni-icon">🎓</span> Sincronizar a Skool</div>
     </nav>
     <div class="sf">
       <button class="sbtn" id="syncBtn" onclick="doSync()"><span id="si">↻</span> Sincronizar todo</button>
@@ -2609,11 +2609,60 @@ function runTelSearch(){
     '<button class="saveb" style="margin-top:12px;width:100%" onclick="insertTelResults()"'+insertDisabled+'>'+insertLabel+'</button>';
 }
 
+var _autoInsertTimer=null;
+
+function _cancelAutoInsert(){
+  if(_autoInsertTimer){clearTimeout(_autoInsertTimer);_autoInsertTimer=null;}
+}
+
+async function _autoInsertTel(){
+  _autoInsertTimer=null;
+  // Poblar _telInsertMap en silencio (igual que runTelSearch pero sin tocar el DOM del panel)
+  var sinTel=all.filter(function(c){return c.correo&&!c.telefono;});
+  if(!sinTel.length) return;
+  var BACKUP_ID='wb-backup';
+  var allSrc=getAllPhoneSources().filter(function(s){return s.enabled!==false;});
+  var primarySources=allSrc.filter(function(s){return s.id!==BACKUP_ID;});
+  var backupSrc=allSrc.find(function(s){return s.id===BACKUP_ID;});
+  var primary={}, backupMap={};
+  primarySources.forEach(function(s){
+    (phoneCache[s.id]||[]).forEach(function(e){
+      if(!e.email) return;
+      if(!primary[e.email]) primary[e.email]=[];
+      primary[e.email].push({phone:e.phone,pais:e.pais,source:e.source});
+    });
+  });
+  if(backupSrc){
+    (phoneCache[backupSrc.id]||[]).forEach(function(e){
+      if(!e.email) return;
+      if(!backupMap[e.email]) backupMap[e.email]=[];
+      backupMap[e.email].push({phone:e.phone,pais:e.pais,source:e.source});
+    });
+  }
+  var map={};
+  sinTel.forEach(function(c){
+    var k=c.correo.trim().toLowerCase();
+    var candidates=primary[k]||[];
+    if(!candidates.filter(function(x){return x.phone&&x.phone.toString().trim();}).length && backupMap[k])
+      candidates=backupMap[k];
+    var withPhone=candidates.filter(function(x){return x.phone&&x.phone.toString().trim();});
+    if(withPhone.length){
+      var best=withPhone.reduce(function(a,b){return phoneScore(b.phone)>phoneScore(a.phone)?b:a;});
+      map[k]=fixPhone(best.phone,best.pais);
+    }
+  });
+  var count=Object.keys(map).length;
+  if(!count) return;
+  window._telInsertMap=map;
+  toast('⏱ Auto-insertando '+count+' teléfono'+(count>1?'s':'')+' (sin acción en 10 min)…');
+  await insertTelResults();
+}
+
 function updateTelQuickBadge(){
   var badge=document.getElementById('tel-quick-badge');
   if(!badge) return;
   var sinTel=all.filter(function(c){return c.correo&&!c.telefono;});
-  if(!sinTel.length){badge.style.display='none';return;}
+  if(!sinTel.length){badge.style.display='none';_cancelAutoInsert();return;}
   var BACKUP_ID='wb-backup';
   var allSrc=getAllPhoneSources().filter(function(s){return s.enabled!==false;});
   var primary={};
@@ -2632,11 +2681,14 @@ function updateTelQuickBadge(){
   if(count>0){
     badge.textContent=count+' teléfono'+(count>1?'s':'')+' nuevo'+(count>1?'s':'')+' listos para insertar';
     badge.style.display='inline-block';
+    // Insertar al instante si no hay un insert en curso
+    if(!_autoInsertTimer) _autoInsertTimer=setTimeout(_autoInsertTel, 0);
   } else if(pending>0){
     badge.textContent='Cargando fuentes…';
     badge.style.display='inline-block';
   } else {
     badge.style.display='none';
+    _cancelAutoInsert();
   }
 }
 
@@ -2657,6 +2709,7 @@ function telSwitchTab(tab){
 }
 
 async function insertTelResults(){
+  _cancelAutoInsert();
   var map = window._telInsertMap || {};
   var entries = Object.keys(map);
   if(!entries.length){ toast('Sin resultados para insertar'); return; }
