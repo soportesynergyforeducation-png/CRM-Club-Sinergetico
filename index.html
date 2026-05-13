@@ -370,6 +370,17 @@
   }
   .expbtn:hover{background:linear-gradient(135deg,rgba(22,163,74,0.18),rgba(22,163,74,0.1));transform:translateY(-1px)}
   .expbtn:active{transform:translateY(0)}
+  .telbtn{
+    background:linear-gradient(135deg,rgba(139,124,248,0.12),rgba(139,124,248,0.06));
+    border:1px solid rgba(139,124,248,0.3);
+    color:var(--acc);padding:9px 16px;border-radius:var(--r);
+    font-size:13px;cursor:pointer;font-weight:600;
+    display:flex;align-items:center;gap:7px;white-space:nowrap;
+    transition:all .18s;font-family:var(--font);position:relative;
+  }
+  .telbtn:hover{background:linear-gradient(135deg,rgba(139,124,248,0.2),rgba(139,124,248,0.1));transform:translateY(-1px)}
+  .telbtn:active{transform:translateY(0)}
+  .telbtn-badge{position:absolute;top:-7px;right:-7px;background:var(--acc);color:#fff;border-radius:12px;padding:2px 7px;font-size:10px;font-weight:700;white-space:nowrap;border:2px solid var(--s1);display:none;animation:pop .2s ease}
   .inp{
     width:100%;background:var(--s2);border:1px solid var(--bdr2);
     color:var(--t1);padding:8px 11px;border-radius:var(--r);
@@ -553,7 +564,7 @@
     .mob-title span{font-size:11px;color:var(--t3);font-weight:400}
     .sw{order:4;width:100%}
     /* Ocultar botones de desktop del topbar */
-    .expbtn,.addbtn{display:none!important}
+    .expbtn,.addbtn,.telbtn{display:none!important}
     /* Contador de resultados en topbar móvil */
     #rc{display:none}
 
@@ -811,6 +822,9 @@
         <input class="si" id="qi" placeholder="Buscar por nombre, correo, teléfono…" oninput="go()">
       </div>
       <button class="expbtn" onclick="exportCSV()" id="expBtn">⬇ Exportar CSV</button>
+      <button class="telbtn" onclick="openTelTool()" id="telQuickBtn">📞 Insertar teléfonos
+        <span class="telbtn-badge" id="tel-quick-badge"></span>
+      </button>
       <button class="addbtn" onclick="openAdd()">+ Agregar contacto</button>
       <!-- Campanita de notificaciones -->
       <div id="notif-wrapper" style="position:relative;flex-shrink:0">
@@ -1222,6 +1236,7 @@ async function loadPhoneSource(src){
     phoneCache[src.id]=allData;
     phoneCacheStatus[src.id]='ok:'+allData.length;
     _refreshTelSrcUI();
+    updateTelQuickBadge();
     if(document.getElementById('tp')&&document.getElementById('tp').classList.contains('show')) runTelSearch();
     return;
   }catch(e){
@@ -1834,6 +1849,7 @@ function updateStats(){
 }
 
 function go(){
+  updateTelQuickBadge();
   const q=document.getElementById('qi').value.toLowerCase().trim();
   var dfEl=document.getElementById('df'), dtEl=document.getElementById('dt');
   var dateFrom=dfEl&&dfEl.value?new Date(dfEl.value+'T00:00:00'):null;
@@ -2593,6 +2609,37 @@ function runTelSearch(){
     '<button class="saveb" style="margin-top:12px;width:100%" onclick="insertTelResults()"'+insertDisabled+'>'+insertLabel+'</button>';
 }
 
+function updateTelQuickBadge(){
+  var badge=document.getElementById('tel-quick-badge');
+  if(!badge) return;
+  var sinTel=all.filter(function(c){return c.correo&&!c.telefono;});
+  if(!sinTel.length){badge.style.display='none';return;}
+  var BACKUP_ID='wb-backup';
+  var allSrc=getAllPhoneSources().filter(function(s){return s.enabled!==false;});
+  var primary={};
+  allSrc.forEach(function(s){
+    (phoneCache[s.id]||[]).forEach(function(e){
+      if(!e.email) return;
+      if(!primary[e.email]) primary[e.email]=[];
+      primary[e.email].push(e.phone);
+    });
+  });
+  var count=sinTel.filter(function(c){
+    var k=c.correo.trim().toLowerCase();
+    return (primary[k]||[]).some(function(p){return p&&p.toString().trim();});
+  }).length;
+  var pending=allSrc.filter(function(s){return !phoneCacheStatus[s.id]||phoneCacheStatus[s.id]==='loading';}).length;
+  if(count>0){
+    badge.textContent=count+' teléfono'+(count>1?'s':'')+' nuevo'+(count>1?'s':'')+' listos para insertar';
+    badge.style.display='inline-block';
+  } else if(pending>0){
+    badge.textContent='Cargando fuentes…';
+    badge.style.display='inline-block';
+  } else {
+    badge.style.display='none';
+  }
+}
+
 function telSwitchTab(tab){
   var foundBtn=document.getElementById('tel-tab-found');
   var nfBtn=document.getElementById('tel-tab-notfound');
@@ -2637,7 +2684,8 @@ async function insertTelResults(){
 
   toast('✓ '+ok+' teléfonos insertados en Sheets'+(errors?' · '+errors+' errores':''));
   if(btn){ btn.disabled=false; btn.textContent='✓ Listo'; }
-  runTelSearch(); // refrescar para mostrar solo los que siguen sin tel
+  updateTelQuickBadge();
+  runTelSearch();
 }
 
 function copyTelResults(){
