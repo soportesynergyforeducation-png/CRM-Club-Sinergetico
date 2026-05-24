@@ -361,8 +361,8 @@
   }
 
   /* ── KPI CARDS ── */
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
-  .kpi-grid-sm{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:22px;max-width:560px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+  .kpi-grid-sm{display:none}
   .kpi-card{
     background:rgba(255,255,255,.05);
     border:1px solid rgba(255,255,255,.08);
@@ -677,8 +677,7 @@
   @media(max-width:768px){
     .compact-btn{display:none}
     #ns-vista,#compact-mob-btn{display:flex!important}
-    .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-    .kpi-grid-sm{grid-template-columns:repeat(2,1fr);max-width:100%}
+    .kpi-grid{grid-template-columns:repeat(3,1fr);gap:10px}
     .kpi-num{font-size:20px}
     .dash-bento{grid-template-columns:1fr;gap:12px}
     .dash-bento-wide{grid-column:span 1}
@@ -1181,10 +1180,6 @@
               <span class="kpi-badge">membresía reg.</span>
             </div>
           </div>
-        </div>
-
-        <!-- KPI alertas row -->
-        <div class="kpi-grid-sm">
           <div class="kpi-card kpi-c-amber">
             <div class="kpi-ibox"><i data-lucide="clock-alert" class="lc lc-kpi"></i></div>
             <div class="kpi-body">
