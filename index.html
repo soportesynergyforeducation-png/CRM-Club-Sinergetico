@@ -1067,10 +1067,6 @@
       <div class="ns"><span class="ni-label">Principal</span></div>
       <div class="ni on" data-page="dashboard" id="nav-dashboard" data-tip="Dashboard"><span class="ni-icon"><i data-lucide="layout-dashboard" class="lc"></i></span><span class="ni-label"> Dashboard</span></div>
       <div class="ni" data-page="clientes" id="nav-clientes" data-tip="Clientes"><span class="ni-icon"><i data-lucide="users" class="lc"></i></span><span class="ni-label"> Clientes <span class="nb" id="nc">…</span></span></div>
-      <div class="ns"><span class="ni-label">Filtros rápidos</span></div>
-      <div class="ni" data-v="all" data-tip="Todos"><span class="ni-icon"><i data-lucide="list" class="lc"></i></span><span class="ni-label"> Todos</span></div>
-      <div class="ni" data-v="activo" data-tip="Activos"><span class="ni-icon"><i data-lucide="check-circle-2" class="lc"></i></span><span class="ni-label"> Activos</span></div>
-      <div class="ni" data-v="revocado" data-tip="Revocados"><span class="ni-icon"><i data-lucide="x-circle" class="lc"></i></span><span class="ni-label"> Revocados</span></div>
       <div class="ns"><span class="ni-label">Membresía Skool</span></div>
       <div class="ni" data-v="skool-hoy" data-tip="Vence hoy"><span class="ni-icon"><i data-lucide="zap" class="lc"></i></span><span class="ni-label"> Vence hoy <span class="nb nb-e" id="nc-hoy">0</span></span></div>
       <div class="ni" data-v="skool-pronto" data-tip="≤15 días"><span class="ni-icon"><i data-lucide="clock" class="lc"></i></span><span class="ni-label"> ≤15 días <span class="nb nb-w" id="nc-pronto">0</span></span></div>
@@ -2680,16 +2676,19 @@ function switchPage(page){
   var dash=document.getElementById('page-dashboard');
   var cli=document.getElementById('page-clientes');
   var sw=document.querySelector('.sw');
+  var compBtn=document.getElementById('compact-btn');
   if(page==='dashboard'){
     dash.style.display='';
     cli.style.display='none';
     if(sw) sw.style.display='';
+    if(compBtn) compBtn.style.display='none';
     document.getElementById('nav-dashboard').classList.add('on');
     document.getElementById('nav-clientes').classList.remove('on');
   } else {
     dash.style.display='none';
     cli.style.display='flex';
     if(sw) sw.style.display='';
+    if(compBtn) compBtn.style.display='';
     document.getElementById('nav-dashboard').classList.remove('on');
     document.getElementById('nav-clientes').classList.add('on');
   }
