@@ -2485,13 +2485,13 @@ function buildPhoneSourceNote(c){
     }
   });
 
-  // Si ninguna fuente está cargada aún, no mostrar nada
   var anyLoaded=getAllPhoneSources().some(function(s){return (phoneCacheStatus[s.id]||'').startsWith('ok');});
-  if(!anyLoaded) return '';
 
   var html='<div class="psec" style="opacity:.85">';
   html+='<div class="pst" style="font-size:10px;letter-spacing:.6px;color:var(--t4)">🗂 FUENTES DE ORIGEN</div>';
-  if(!matches.length){
+  if(!anyLoaded){
+    html+='<div style="font-size:12px;color:var(--t4);padding:4px 0">Abre la herramienta de teléfonos (📞) para cargar las fuentes</div>';
+  } else if(!matches.length){
     html+='<div style="font-size:12px;color:var(--t4);padding:4px 0">No encontrado en ninguna fuente cargada</div>';
   } else {
     matches.forEach(function(m){
