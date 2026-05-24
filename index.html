@@ -836,7 +836,8 @@
     /* Toast en parte superior en móvil */
     .toast{bottom:auto!important;top:16px!important;right:14px!important;left:14px!important;max-width:none!important;text-align:center}
     #crm-notif-panel{position:fixed!important;top:60px!important;left:10px!important;right:10px!important;width:auto!important;max-height:70vh!important}
-    #notif-wrapper{order:3;flex-shrink:0}
+    #notif-wrapper{order:5;flex-shrink:0}
+    .sw{order:4!important}
     .panel .save-row{padding-bottom:max(80px,calc(70px + env(safe-area-inset-bottom)))!important}
     .dash-toggle-btn{display:none!important}
     /* Fix buscador teléfonos en móvil */
@@ -978,23 +979,23 @@
     <div class="topbar">
       <button class="mob-hamburger" onclick="openSidebar()">☰</button>
       <div class="mob-title"><span id="mob-rc"></span></div>
-      <div class="sw">
-        <span class="sic">⌕</span>
-        <input class="si" id="qi" placeholder="Buscar por nombre, correo, teléfono…" oninput="go()">
-      </div>
       <button class="compact-btn" id="compact-btn" onclick="toggleCompact()" title="Modo compacto (C)">⊟ Compacto</button>
       <button class="expbtn" onclick="exportCSV()" id="expBtn">⬇ Exportar CSV</button>
       <button class="telbtn" onclick="openTelTool()" id="telQuickBtn">📞 Insertar teléfonos
         <span class="telbtn-badge" id="tel-quick-badge"></span>
       </button>
       <button class="addbtn" onclick="openAdd()">+ Agregar contacto</button>
+      <div class="sw">
+        <span class="sic">⌕</span>
+        <input class="si" id="qi" placeholder="Buscar por nombre, correo, teléfono…" oninput="go()">
+      </div>
       <!-- Campanita de notificaciones -->
       <div id="notif-wrapper" style="position:relative;flex-shrink:0">
         <button onclick="toggleCRMNotifPanel()" style="position:relative;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:7px;cursor:pointer;color:var(--t2);display:flex;align-items:center;justify-content:center;transition:all .15s" title="Notificaciones">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span id="crm-notif-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--acc);color:#fff;border-radius:50%;width:18px;height:18px;font-size:9px;font-weight:700;align-items:center;justify-content:center;border:2px solid var(--s1)"></span>
         </button>
-        <div id="crm-notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:1000;overflow:hidden;max-height:400px;flex-direction:column">
+        <div id="crm-notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;left:auto;width:320px;background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:1000;overflow:hidden;max-height:400px;flex-direction:column">
           <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between">
             <span style="font-size:13px;font-weight:700;color:var(--t1)">Notificaciones</span>
             <button onclick="clearCRMNotifs()" style="background:none;border:none;font-size:11px;color:var(--acc);cursor:pointer;font-weight:600">Limpiar</button>
