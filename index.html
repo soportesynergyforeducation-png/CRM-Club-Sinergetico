@@ -2115,6 +2115,8 @@ function det(i){
       </div>
     </div>
 
+    ${buildPhoneSourceNote(c)}
+
     <div class="save-row">
       <button class="saveb-edit" onclick="guardarCambios('${esc(c.correo)}')">💾 Guardar cambios en Sheets</button>
       <button class="cancelbtn" onclick="toggleEditMode()">Cancelar</button>
@@ -2459,6 +2461,51 @@ function getCountryLabel(pais, tel){
   return null;
 }
 
+function buildPhoneSourceNote(c){
+  var email=(c.correo||'').trim().toLowerCase();
+  var rawPhone=(c.telefono||'').toString().replace(/\D/g,'');
+  var last10=rawPhone.length>=10?rawPhone.slice(-10):'';
+
+  var matches=[];
+  getAllPhoneSources().forEach(function(s){
+    var rows=phoneCache[s.id]||[];
+    var found=rows.find(function(r){
+      var rEmail=(r.email||'').trim().toLowerCase();
+      var rPhone=(r.phone||'').toString().replace(/\D/g,'');
+      var rLast10=rPhone.length>=10?rPhone.slice(-10):'';
+      if(email && rEmail===email) return true;
+      if(last10 && rLast10 && rLast10===last10) return true;
+      return false;
+    });
+    if(found){
+      var byPhone=last10&&(found.phone||'').toString().replace(/\D/g,'').slice(-10)===last10;
+      var byEmail=email&&(found.email||'').trim().toLowerCase()===email;
+      var how=(byEmail&&byPhone)?'correo y teléfono':byEmail?'correo':'teléfono';
+      matches.push({label:s.label,how:how,status:phoneCacheStatus[s.id]||'idle'});
+    }
+  });
+
+  // Si ninguna fuente está cargada aún, no mostrar nada
+  var anyLoaded=getAllPhoneSources().some(function(s){return (phoneCacheStatus[s.id]||'').startsWith('ok');});
+  if(!anyLoaded) return '';
+
+  var html='<div class="psec" style="opacity:.85">';
+  html+='<div class="pst" style="font-size:10px;letter-spacing:.6px;color:var(--t4)">🗂 FUENTES DE ORIGEN</div>';
+  if(!matches.length){
+    html+='<div style="font-size:12px;color:var(--t4);padding:4px 0">No encontrado en ninguna fuente cargada</div>';
+  } else {
+    matches.forEach(function(m){
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bdr2)">';
+      html+='<span style="font-size:11px;color:var(--ok)">●</span>';
+      html+='<span style="font-size:12px;color:var(--t2);font-weight:600;flex:1">'+esc(m.label)+'</span>';
+      html+='<span style="font-size:10px;color:var(--t4);background:var(--s2);padding:1px 7px;border-radius:8px">por '+esc(m.how)+'</span>';
+      html+='</div>';
+    });
+  }
+  html+='</div>';
+  return html;
+}
+
 function openTelTool(){
   if(window.innerWidth<=768) closeSidebar();
   var srcLoaded=getAllPhoneSources().filter(function(s){return s.enabled!==false&&phoneCacheStatus[s.id]&&phoneCacheStatus[s.id]!=='idle';}).length;
@@ -2573,7 +2620,7 @@ function runTelSearch(){
         '<span style="font-size:12px;color:var(--t3);flex:1">'+esc(email)+'</span>'+
         srcBadge+
       '</div>');
-      window._telInsertMap[email]=fixed;
+      window._telInsertMap[email]={phone:fixed,source:best.source,fromBackup:fromBackup};
     } else if(pendingSources>0){
       notFoundRows.push('<div class="tel-row" style="opacity:.6">'+
         '<span class="spin" style="font-size:11px;display:inline-block;color:var(--acc);margin-right:6px">↻</span>'+
@@ -2711,34 +2758,57 @@ function telSwitchTab(tab){
 async function insertTelResults(){
   _cancelAutoInsert();
   var map = window._telInsertMap || {};
-  var entries = Object.keys(map);
+  // Filtrar solo los que tienen teléfono real (no 'x')
+  var entries = Object.keys(map).filter(function(e){
+    var v=map[e]; return (typeof v==='object'?v.phone:v)!=='x';
+  });
   if(!entries.length){ toast('Sin resultados para insertar'); return; }
   if(!WRITER_URL){ toast('⚠ WRITER_URL no configurada'); return; }
 
   var btn = document.querySelector('#tel-results .saveb');
   if(btn){ btn.disabled=true; btn.textContent='Insertando…'; }
 
-  var ok=0, errors=0;
+  var ok=0, errors=0, inserted=[];
   for(var i=0; i<entries.length; i++){
     var email = entries[i];
-    var phone = map[email];
+    var entry = map[email];
+    var phone = typeof entry==='object' ? entry.phone : entry;
+    var source = typeof entry==='object' ? entry.source : '';
+    var fromBackup = typeof entry==='object' ? entry.fromBackup : false;
     try{
       var params = new URLSearchParams();
       params.append('secret', WRITER_SECRET);
       params.append('correo', email);
       params.append('campos', JSON.stringify({telefono: phone}));
       await fetch(WRITER_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
-      // Actualizar caché local
       var c = all.find(function(x){return (x.correo||'').toLowerCase()===email;});
       if(c) c.telefono = phone;
+      inserted.push({email:email,phone:phone,source:source,fromBackup:fromBackup});
       ok++;
     } catch(e){ errors++; }
   }
 
   toast('✓ '+ok+' teléfonos insertados en Sheets'+(errors?' · '+errors+' errores':''));
-  if(btn){ btn.disabled=false; btn.textContent='✓ Listo'; }
   updateTelQuickBadge();
-  runTelSearch();
+
+  // Mostrar resumen de lo insertado en vez de limpiar la lista
+  var rows=inserted.map(function(r){
+    var srcColor=r.fromBackup?'rgba(240,168,90,0.15)':'rgba(90,219,166,0.1)';
+    var srcTextColor=r.fromBackup?'var(--warn)':'var(--acc2)';
+    var srcBorder=r.fromBackup?'rgba(240,168,90,0.3)':'rgba(90,219,166,0.2)';
+    var srcBadge=r.source?'<span style="font-size:10px;background:'+srcColor+';color:'+srcTextColor+';border:1px solid '+srcBorder+';padding:1px 7px;border-radius:10px;font-weight:600">'+(r.fromBackup?'📦 ':'')+esc(r.source)+'</span>':'';
+    return '<div class="tel-row found" style="flex-wrap:wrap;gap:6px">'+
+      '<span style="font-size:10px;font-weight:700;color:var(--ok);padding:1px 6px;background:rgba(90,219,100,0.12);border-radius:8px">✓ insertado</span>'+
+      '<span class="tel-num">'+esc(r.phone)+'</span>'+
+      '<span style="font-size:12px;color:var(--t3);flex:1">'+esc(r.email)+'</span>'+
+      srcBadge+
+    '</div>';
+  });
+
+  document.getElementById('tel-results').innerHTML=
+    '<div style="font-size:11px;color:var(--ok);margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">✓ '+ok+' teléfonos insertados'+(errors?' · <span style="color:var(--err)">'+errors+' errores</span>':'')+'</div>'+
+    '<div style="margin-bottom:12px">'+rows.join('')+'</div>'+
+    '<button class="saveb" style="width:100%;background:var(--t4);color:var(--t2)" onclick="runTelSearch()">🔄 Buscar de nuevo</button>';
 }
 
 function copyTelResults(){
