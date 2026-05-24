@@ -2236,8 +2236,8 @@ function go(){
   var evSel=msdState.ev.sel;
   var memSel=msdState.mem.sel;
   let res=all;
-  if(curF==='activo') res=res.filter(c=>c.status==='ACTIVO');
-  else if(curF==='revocado') res=res.filter(c=>c.status==='REVOCADO');
+  if(curF==='activo') res=res.filter(c=>{const a=(c.acceso||'').trim();return a==='Si'||a==='En automático';});
+  else if(curF==='revocado') res=res.filter(c=>{const a=(c.acceso||'').trim();return a==='No'||a.toLowerCase().startsWith('revocado');});
   else if(curF==='renovar') res=res.filter(c=>(c.renovar||'').toLowerCase().includes('renovar'));
   else if(curF==='feliz') res=res.filter(c=>c.happiness==='Feliz');
   else if(curF==='telegram') res=res.filter(c=>c.telegram==='No Registrado'||!c.telegram);
