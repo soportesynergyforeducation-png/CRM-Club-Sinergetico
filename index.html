@@ -475,6 +475,9 @@
   }
   .th{font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
   .tbody{max-height:calc(100vh - 340px);overflow-y:auto}
+  @media(min-width:769px){
+    #page-clientes .tbody{max-height:none;overflow-y:auto;flex:1 1 0;min-height:0}
+  }
   .tr{
     display:grid;
     grid-template-columns:32px 1.3fr 1.5fr .9fr .75fr .85fr .75fr 1.1fr 80px;
