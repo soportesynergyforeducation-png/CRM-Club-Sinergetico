@@ -545,6 +545,10 @@
   }
   .compact-btn:hover{color:var(--acc);border-color:var(--bdr3)}
   .compact-btn.on{background:var(--acc-glow);color:var(--acc);border-color:var(--bdr3)}
+  @media(max-width:768px){
+    .compact-btn{display:none}
+    #ns-vista,#compact-mob-btn{display:flex!important}
+  }
   .compact .tr{padding:6px 18px}
   .compact .td{font-size:12px}
   .compact .av{width:22px;height:22px;border-radius:6px;font-size:9px}
@@ -943,6 +947,8 @@
       <div class="ni" data-v="feliz" data-tip="Customer Feliz"><span class="ni-icon">☺</span><span class="ni-label"> Customer Feliz</span></div>
       <div class="ni" data-v="telegram" data-tip="Sin Telegram"><span class="ni-icon">✈</span><span class="ni-label"> Sin Telegram</span></div>
       <div class="ni" data-v="encuesta" data-tip="Realizó encuesta"><span class="ni-icon">✓</span><span class="ni-label"> Realizó encuesta</span></div>
+      <div class="ns" style="display:none" id="ns-vista"><span class="ni-label">Vista</span></div>
+      <div class="ni" id="compact-mob-btn" onclick="toggleCompact()" data-tip="Modo compacto" style="display:none"><span class="ni-icon">⊟</span><span class="ni-label"> Modo compacto</span></div>
     </nav>
     <div class="sidebar-collapse-btn" id="sidebar-collapse-btn" onclick="toggleSidebar()" title="Colapsar sidebar">‹</div>
     <div class="sf">
@@ -3626,11 +3632,12 @@ function toggleSidebar(){
 // ── COMPACT MODE ──
 function toggleCompact(){
   var tb=document.getElementById('tb');
-  var btn=document.getElementById('compact-btn');
-  if(!tb||!btn) return;
+  if(!tb) return;
   var on=tb.classList.toggle('compact');
-  btn.classList.toggle('on',on);
-  btn.textContent=on?'⊟ Normal':'⊟ Compacto';
+  var btn=document.getElementById('compact-btn');
+  if(btn){btn.classList.toggle('on',on);btn.textContent=on?'⊟ Normal':'⊟ Compacto';}
+  var mobBtn=document.getElementById('compact-mob-btn');
+  if(mobBtn) mobBtn.classList.toggle('on',on);
 }
 
 // ── KEYBOARD SHORTCUTS ──
