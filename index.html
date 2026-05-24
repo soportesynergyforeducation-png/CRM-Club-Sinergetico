@@ -15,72 +15,127 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg:#f4f4f6;
+    --bg:#f0f2f5;
     --s1:#ffffff;
-    --s2:#f8f8fa;
-    --s3:#eeeef2;
-    --s4:#e4e4ea;
+    --s2:#f7f8fb;
+    --s3:#eceef4;
+    --s4:#e2e5ef;
     --acc:#c0152a;
     --acc2:#e8435a;
     --acc3:#f0a85a;
     --acc-glow:rgba(192,21,42,0.10);
-    --t1:#111118;
-    --t2:#4a4a5e;
-    --t3:#9090a8;
-    --bdr:rgba(0,0,0,0.07);
-    --bdr2:rgba(0,0,0,0.12);
-    --bdr3:rgba(192,21,42,0.22);
+    --t1:#0f0f1a;
+    --t2:#42425c;
+    --t3:#8888a6;
+    --t4:#b8b8cc;
+    --bdr:rgba(0,0,0,0.06);
+    --bdr2:rgba(0,0,0,0.10);
+    --bdr3:rgba(192,21,42,0.20);
     --ok:#16a34a;--err:#c0152a;--warn:#d97706;
     --r:10px;--r2:14px;
     --font:'DM Sans',system-ui,sans-serif;
     --font-serif:'DM Serif Display',serif;
+    --shadow-sm:0 1px 4px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);
+    --shadow-md:0 2px 8px rgba(0,0,0,0.07),0 8px 28px rgba(0,0,0,0.06);
+    --shadow-lg:0 8px 32px rgba(0,0,0,0.10),0 24px 64px rgba(0,0,0,0.07);
   }
   [data-theme="dark"]{
-    --bg:#0f0f14;
-    --s1:#17171f;
-    --s2:#1e1e28;
-    --s3:#26263a;
-    --s4:#2e2e42;
+    --bg:#0a0a10;
+    --s1:#13131c;
+    --s2:#1a1a26;
+    --s3:#222232;
+    --s4:#2a2a3e;
     --acc:#e8435a;
     --acc2:#f0607a;
     --acc3:#f0a85a;
     --acc-glow:rgba(232,67,90,0.14);
-    --t1:#eeeef5;
-    --t2:#9090b8;
-    --t3:#5a5a7a;
-    --bdr:rgba(255,255,255,0.07);
-    --bdr2:rgba(255,255,255,0.11);
-    --bdr3:rgba(232,67,90,0.25);
+    --t1:#f0f0fa;
+    --t2:#8a8aae;
+    --t3:#52526e;
+    --t4:#3a3a52;
+    --bdr:rgba(255,255,255,0.06);
+    --bdr2:rgba(255,255,255,0.10);
+    --bdr3:rgba(232,67,90,0.22);
     --ok:#22c55e;--err:#e8435a;--warn:#f59e0b;
+    --shadow-sm:0 1px 4px rgba(0,0,0,0.3),0 4px 16px rgba(0,0,0,0.2);
+    --shadow-md:0 2px 8px rgba(0,0,0,0.35),0 8px 28px rgba(0,0,0,0.25);
+    --shadow-lg:0 8px 32px rgba(0,0,0,0.4),0 24px 64px rgba(0,0,0,0.3);
   }
-  /* ── THEME TOGGLE ── */
-  .theme-toggle{
-    display:flex;align-items:center;gap:8px;
-    flex-shrink:0;
+  [data-theme="blue"]{
+    --bg:#05101f;
+    --s1:#0b1a2e;
+    --s2:#102236;
+    --s3:#172d46;
+    --s4:#1f3858;
+    --acc:#4f8ef7;
+    --acc2:#74a9ff;
+    --acc3:#f59e0b;
+    --acc-glow:rgba(79,142,247,0.16);
+    --t1:#e8f2ff;
+    --t2:#7aaad8;
+    --t3:#3d6a98;
+    --t4:#274e74;
+    --bdr:rgba(79,142,247,0.10);
+    --bdr2:rgba(79,142,247,0.16);
+    --bdr3:rgba(79,142,247,0.32);
+    --ok:#34d399;--err:#f87171;--warn:#fbbf24;
+    --shadow-sm:0 1px 4px rgba(0,0,0,0.4),0 4px 16px rgba(5,16,31,0.5);
+    --shadow-md:0 2px 8px rgba(0,0,0,0.45),0 8px 28px rgba(5,16,31,0.55);
+    --shadow-lg:0 8px 32px rgba(0,0,0,0.5),0 24px 64px rgba(5,16,31,0.6);
   }
-  .theme-toggle-label{font-size:11px;color:var(--t3);font-weight:500;white-space:nowrap;user-select:none}
-  .toggle-track{
-    width:40px;height:22px;border-radius:11px;
+  /* ── THEME SELECTOR ── */
+  .theme-selector{
+    display:flex;align-items:center;gap:4px;
     background:var(--s3);border:1px solid var(--bdr2);
-    cursor:pointer;position:relative;
-    transition:background .25s,border-color .25s;
-    flex-shrink:0;
+    border-radius:12px;padding:3px;
+    transition:background 0.32s cubic-bezier(0.4,0,0.2,1),border-color 0.28s;
   }
-  .toggle-track:hover{border-color:var(--acc)}
-  .toggle-track.active{background:rgba(192,21,42,0.2);border-color:var(--acc)}
-  [data-theme="dark"] .toggle-track.active{background:rgba(232,67,90,0.22);border-color:var(--acc)}
-  .toggle-thumb{
-    position:absolute;top:3px;left:3px;
-    width:14px;height:14px;border-radius:50%;
-    background:var(--t3);
-    transition:transform .22s cubic-bezier(.4,0,.2,1),background .22s;
-    pointer-events:none;
+  .theme-btn{
+    display:flex;align-items:center;gap:5px;
+    padding:5px 10px;border-radius:9px;border:none;
+    background:transparent;color:var(--t3);
+    font-size:11px;font-weight:600;cursor:pointer;
+    font-family:var(--font);white-space:nowrap;
+    transition:background 0.22s cubic-bezier(0.4,0,0.2,1),color 0.18s,transform 0.18s;
+    user-select:none;
   }
-  .toggle-track.active .toggle-thumb{
-    transform:translateX(18px);
-    background:var(--acc);
+  .theme-btn:hover{color:var(--t2);background:var(--s4)}
+  .theme-btn.active{
+    background:var(--s1);color:var(--acc);
+    box-shadow:0 1px 6px rgba(0,0,0,0.12);
   }
+  .theme-btn:active{transform:scale(0.96)}
+  .theme-btn-dot{
+    width:7px;height:7px;border-radius:50%;flex-shrink:0;
+    transition:background 0.22s;
+  }
+  .tbtn-light .theme-btn-dot{background:#e2a800}
+  .tbtn-dark  .theme-btn-dot{background:#8888c8}
+  .tbtn-blue  .theme-btn-dot{background:#4f8ef7}
+  /* legacy toggle classes kept for backward compat */
+  .theme-toggle{display:flex;align-items:center;gap:8px;flex-shrink:0}
   .toggle-icon{font-size:13px;line-height:1}
+  /* ── THEME FADE TRANSITIONS ── */
+  html{transition:background-color 0.32s cubic-bezier(0.4,0,0.2,1)}
+  body,
+  .sidebar,.main,.topbar,.frow,.date-row,.content,
+  .sc,.tw,.panel,.ov,
+  .ni,.nb,.ns,.logo,.sf,
+  .tr,.th-row,.td,.th,
+  .fc,.fsel,.si,.inp,.na,.date-inp,
+  .toast,.msd-drop,.msd-btn,
+  .saveb,.addbtn,.expbtn,.telbtn,
+  .badge,.ba,.br,.bp,.sk-ok,.sk-w,.sk-e,.sk-h,
+  .pav,.psec,.pst,.pgrid,.pf,.wab,
+  .skblock,.vblock,.venta-row,
+  .tel-row,.tel-num{
+    transition:
+      background-color 0.32s cubic-bezier(0.4,0,0.2,1),
+      color 0.22s cubic-bezier(0.4,0,0.2,1),
+      border-color 0.28s cubic-bezier(0.4,0,0.2,1),
+      box-shadow 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+
   html,body{height:100%;overflow:hidden}
   body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   .app{display:flex;height:100vh}
@@ -92,7 +147,7 @@
     border-right:1px solid var(--bdr);
     display:flex;flex-direction:column;
     position:relative;overflow:hidden;
-    box-shadow:2px 0 12px rgba(0,0,0,0.06);
+    box-shadow:var(--shadow-md);
   }
   .sidebar::before{
     content:'';position:absolute;top:-60px;left:-40px;
@@ -166,7 +221,7 @@
     padding:14px 24px;border-bottom:1px solid var(--bdr);
     display:flex;align-items:center;gap:12px;
     background:var(--s1);
-    box-shadow:0 1px 8px rgba(0,0,0,0.05);
+    box-shadow:var(--shadow-sm);
   }
   .sw{flex:1;position:relative}
   .si{
@@ -212,11 +267,11 @@
   .sc{
     background:var(--s1);border:1px solid var(--bdr);
     border-radius:var(--r2);padding:16px 18px;
-    transition:all .2s cubic-bezier(.4,0,.2,1);
+    transition:transform 0.22s cubic-bezier(0.32,0.72,0,1),box-shadow 0.22s cubic-bezier(0.32,0.72,0,1),border-color 0.28s cubic-bezier(0.4,0,0.2,1),background-color 0.32s cubic-bezier(0.4,0,0.2,1);
     position:relative;overflow:hidden;
-    box-shadow:0 1px 6px rgba(0,0,0,0.05);
+    box-shadow:var(--shadow-sm);
   }
-  .sc:hover{border-color:var(--bdr3);transform:translateY(-2px);box-shadow:0 6px 20px rgba(192,21,42,0.08)}
+  .sc:hover{border-color:var(--bdr3);transform:translateY(-2px);box-shadow:var(--shadow-md)}
   .sc::after{
     content:'';position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,var(--acc),var(--acc2));
@@ -228,7 +283,7 @@
   .ssub{font-size:11px;color:var(--t3);margin-top:4px}
 
   /* ── TABLE ── */
-  .tw{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+  .tw{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow-md)}
   .th-row{
     display:grid;
     grid-template-columns:32px 1.3fr 1.5fr .9fr .75fr .85fr .75fr 1.1fr 80px;
@@ -285,8 +340,8 @@
     background:var(--s1);border:1px solid var(--bdr);
     border-radius:20px;width:560px;max-height:90vh;
     overflow-y:auto;padding:28px;position:relative;
-    box-shadow:0 24px 80px rgba(0,0,0,0.15);
-    animation:slideUp .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:var(--shadow-lg);
+    animation:slideUp .28s cubic-bezier(0.32,0.72,0,1);
   }
   @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
   .pc{
@@ -412,7 +467,12 @@
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:10px}
   ::-webkit-scrollbar-thumb:hover{background:rgba(192,21,42,0.3)}
+  [data-theme="blue"] ::-webkit-scrollbar-thumb{background:rgba(79,142,247,0.2)}
+  [data-theme="blue"] ::-webkit-scrollbar-thumb:hover{background:rgba(79,142,247,0.4)}
+  [data-theme="dark"] ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
   select option{background:#ffffff;color:#111118}
+  [data-theme="dark"] select option{background:#1a1a26;color:#f0f0fa}
+  [data-theme="blue"] select option{background:#102236;color:#e8f2ff}
 
   /* ── DATE FILTER ── */
   .date-row{display:flex;align-items:center;gap:8px;padding:8px 24px;border-bottom:1px solid var(--bdr);background:var(--s1);flex-wrap:wrap}
@@ -801,12 +861,18 @@
       <div class="ss" id="ss">Conectando…</div>
       <div id="rt-status" style="font-size:10px;color:var(--t3);text-align:center;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:5px"><span id="rt-dot" style="width:7px;height:7px;border-radius:50%;background:var(--t3);display:inline-block;flex-shrink:0"></span><span id="rt-label">Conectando Firebase…</span></div>
       <button class="sbtn" style="margin-top:6px;font-size:11px;opacity:.75" onclick="openConfig()">⚙ Configuración</button>
-      <div class="theme-toggle" style="margin-top:10px;justify-content:center">
-        <span class="toggle-icon" id="theme-icon">☀</span>
-        <div class="toggle-track" id="theme-track" onclick="toggleTheme()">
-          <div class="toggle-thumb"></div>
+      <div style="display:flex;justify-content:center;margin-top:10px">
+        <div class="theme-selector">
+          <button class="theme-btn tbtn-light active" id="tbtn-light" onclick="setTheme('light')">
+            <span class="theme-btn-dot"></span>Claro
+          </button>
+          <button class="theme-btn tbtn-dark" id="tbtn-dark" onclick="setTheme('dark')">
+            <span class="theme-btn-dot"></span>Oscuro
+          </button>
+          <button class="theme-btn tbtn-blue" id="tbtn-blue" onclick="setTheme('blue')">
+            <span class="theme-btn-dot"></span>Azul
+          </button>
         </div>
-        <span class="theme-toggle-label" id="theme-label">Tema claro</span>
       </div>
     </div>
   </div>
@@ -3430,38 +3496,29 @@ function setRTStatus(on){
 }
 
 // ── THEME TOGGLE ──
-function toggleTheme(){
+function setTheme(name){
   var html=document.documentElement;
-  var isDark=html.getAttribute('data-theme')==='dark';
-  var track=document.getElementById('theme-track');
-  var icon=document.getElementById('theme-icon');
-  var label=document.getElementById('theme-label');
-  if(isDark){
-    html.removeAttribute('data-theme');
-    track.classList.remove('active');
-    icon.textContent='☀';
-    if(label) label.textContent='Tema claro';
-    try{localStorage.setItem('crm-theme','light');}catch(e){}
-  } else {
-    html.setAttribute('data-theme','dark');
-    track.classList.add('active');
-    icon.textContent='☾';
-    if(label) label.textContent='Tema oscuro';
-    try{localStorage.setItem('crm-theme','dark');}catch(e){}
-  }
+  if(name==='light') html.removeAttribute('data-theme');
+  else html.setAttribute('data-theme',name);
+  ['light','dark','blue'].forEach(function(t){
+    var btn=document.getElementById('tbtn-'+t);
+    if(btn) btn.classList.toggle('active',t===name);
+  });
+  try{localStorage.setItem('crm-theme',name);}catch(e){}
+}
+function toggleTheme(){ // legacy compat
+  var cur=document.documentElement.getAttribute('data-theme')||'light';
+  setTheme(cur==='dark'?'light':'dark');
 }
 // Restore saved theme
 (function(){
   try{
-    if(localStorage.getItem('crm-theme')==='dark'){
-      document.documentElement.setAttribute('data-theme','dark');
-      var track=document.getElementById('theme-track');
-      var icon=document.getElementById('theme-icon');
-      var label=document.getElementById('theme-label');
-      if(track) track.classList.add('active');
-      if(icon) icon.textContent='☾';
-      if(label) label.textContent='Tema oscuro';
-    }
+    var saved=localStorage.getItem('crm-theme')||'light';
+    if(saved!=='light') document.documentElement.setAttribute('data-theme',saved);
+    // Defer button highlight until DOM is ready
+    window.addEventListener('DOMContentLoaded',function(){
+      setTheme(saved);
+    });
   }catch(e){}
 })();
 
