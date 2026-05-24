@@ -714,7 +714,7 @@
       letter-spacing:-.2px;
     }
     .mob-title span{font-size:11px;color:var(--t3);font-weight:400}
-    .sw{order:4;width:100%;flex:1}
+    .sw{order:2;flex:1;width:auto}
     /* Ocultar botones de desktop del topbar */
     .expbtn,.addbtn,.telbtn{display:none!important}
     /* Contador de resultados en topbar móvil */
@@ -836,8 +836,7 @@
     /* Toast en parte superior en móvil */
     .toast{bottom:auto!important;top:16px!important;right:14px!important;left:14px!important;max-width:none!important;text-align:center}
     #crm-notif-panel{position:fixed!important;top:60px!important;left:10px!important;right:10px!important;width:auto!important;max-height:70vh!important}
-    #notif-wrapper{order:5;flex-shrink:0}
-    .sw{order:4!important}
+    #notif-wrapper{order:3;flex-shrink:0}
     .panel .save-row{padding-bottom:max(80px,calc(70px + env(safe-area-inset-bottom)))!important}
     .dash-toggle-btn{display:none!important}
     /* Fix buscador teléfonos en móvil */
@@ -978,7 +977,6 @@
     <div class="mob-overlay" id="mob-overlay" onclick="closeSidebar()"></div>
     <div class="topbar">
       <button class="mob-hamburger" onclick="openSidebar()">☰</button>
-      <div class="mob-title"><span id="mob-rc"></span></div>
       <button class="compact-btn" id="compact-btn" onclick="toggleCompact()" title="Modo compacto (C)">⊟ Compacto</button>
       <button class="expbtn" onclick="exportCSV()" id="expBtn">⬇ Exportar CSV</button>
       <button class="telbtn" onclick="openTelTool()" id="telQuickBtn">📞 Insertar teléfonos
