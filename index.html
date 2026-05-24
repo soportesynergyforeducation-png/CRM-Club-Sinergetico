@@ -146,10 +146,12 @@
     background:var(--s1);
     border-right:1px solid var(--bdr);
     display:flex;flex-direction:column;
-    position:relative;overflow:hidden;
+    position:relative;overflow:visible;
     box-shadow:var(--shadow-md);
     transition:width 0.28s cubic-bezier(0.4,0,0.2,1),min-width 0.28s cubic-bezier(0.4,0,0.2,1);
   }
+  /* clip only the nav scroll, not the whole sidebar */
+  .sidebar nav{overflow-y:auto;overflow-x:hidden}
   .sidebar::before{
     content:'';position:absolute;top:-60px;left:-40px;
     width:180px;height:180px;
@@ -3644,7 +3646,7 @@ document.addEventListener('keydown',function(e){
     openAdd();
   }
   if(e.key==='Escape'){
-    ['dp','ap','diagp','telp','skiop','cfgp','skpanel'].forEach(function(id){
+    ['dp','ap','tp','diagp'].forEach(function(id){
       var el=document.getElementById(id);
       if(el&&el.classList.contains('show')) el.classList.remove('show');
     });
