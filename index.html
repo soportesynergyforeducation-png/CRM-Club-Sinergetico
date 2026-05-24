@@ -327,10 +327,19 @@
   /* ── PAGE VIEWS ── */
   .page-view{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0}
   @media(min-width:769px){
-    #page-clientes.page-view{overflow:hidden;display:flex;flex-direction:column}
-    #page-clientes .content{padding:0;position:relative;flex:1;overflow:hidden}
-    #page-clientes .tw{position:absolute;inset:0;display:flex;flex-direction:column;border-radius:0;border-left:none;border-right:none;border-bottom:none;box-shadow:none;overflow:hidden}
-    #page-clientes #tb{flex:1;overflow-y:auto;min-height:0}
+    #page-clientes.page-view{overflow:hidden}
+    #page-clientes .content{
+      padding:0;flex:1 1 0;min-height:0;overflow:hidden;
+      display:flex;flex-direction:column;
+      background:var(--s1);
+    }
+    #page-clientes .tw{
+      flex:1 1 0;min-height:0;
+      display:flex;flex-direction:column;
+      border-radius:0;border-left:none;border-right:none;border-bottom:none;box-shadow:none;
+      overflow:hidden;
+    }
+    #page-clientes #tb{flex:1 1 0;min-height:0;overflow-y:auto}
   }
   #page-dashboard.dash-page-view{
     background:#0e1118;
