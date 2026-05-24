@@ -714,7 +714,7 @@
       letter-spacing:-.2px;
     }
     .mob-title span{font-size:11px;color:var(--t3);font-weight:400}
-    .sw{order:4;width:100%}
+    .sw{order:4;width:100%;flex:1}
     /* Ocultar botones de desktop del topbar */
     .expbtn,.addbtn,.telbtn{display:none!important}
     /* Contador de resultados en topbar móvil */
@@ -977,7 +977,7 @@
     <div class="mob-overlay" id="mob-overlay" onclick="closeSidebar()"></div>
     <div class="topbar">
       <button class="mob-hamburger" onclick="openSidebar()">☰</button>
-      <div class="mob-title">Club Sinergético <span id="mob-rc"></span></div>
+      <div class="mob-title"><span id="mob-rc"></span></div>
       <div class="sw">
         <span class="sic">⌕</span>
         <input class="si" id="qi" placeholder="Buscar por nombre, correo, teléfono…" oninput="go()">
