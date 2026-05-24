@@ -2665,7 +2665,7 @@ function switchPage(page){
   if(page==='dashboard'){
     dash.style.display='';
     cli.style.display='none';
-    if(sw) sw.style.display='none';
+    if(sw) sw.style.display='';
     document.getElementById('nav-dashboard').classList.add('on');
     document.getElementById('nav-clientes').classList.remove('on');
   } else {
@@ -3341,8 +3341,20 @@ function initCharts(){
     });
     if(chartMonthly) chartMonthly.destroy();
     chartMonthly=new Chart(ctx,{
-      type:'bar',
-      data:{labels:labels,datasets:[{data:counts,backgroundColor:barColors,borderRadius:6,borderSkipped:false,hoverBackgroundColor:'rgba(99,179,237,0.95)'}]},
+      type:'line',
+      data:{labels:labels,datasets:[{
+        data:counts,
+        borderColor:'#63b3ed',borderWidth:2.5,
+        fill:true,
+        backgroundColor:function(ctx2){
+          var g=ctx2.chart.ctx.createLinearGradient(0,0,0,ctx2.chart.height);
+          g.addColorStop(0,'rgba(99,179,237,0.30)');
+          g.addColorStop(1,'rgba(99,179,237,0.01)');
+          return g;
+        },
+        tension:0.42,
+        pointRadius:4,pointBackgroundColor:'#63b3ed',pointBorderWidth:0,hoverPointRadius:6
+      }]},
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.raw+' inscripciones';}}}},
@@ -3451,29 +3463,13 @@ function initCharts(){
     });
     var running=0;
     monthCounts.forEach(function(v){running+=v;cumulative.push(running);});
+    var barColors2=cumulative.map(function(_,i){
+      return i===cumulative.length-1?'rgba(72,199,120,0.9)':'rgba(72,199,120,0.32)';
+    });
     if(chartCumulative) chartCumulative.destroy();
     chartCumulative=new Chart(ctx,{
-      type:'line',
-      data:{
-        labels:labels,
-        datasets:[{
-          data:cumulative,
-          borderColor:'#48c878',
-          borderWidth:2.5,
-          fill:true,
-          backgroundColor:function(ctx2){
-            var g=ctx2.chart.ctx.createLinearGradient(0,0,0,ctx2.chart.height);
-            g.addColorStop(0,'rgba(72,199,120,0.35)');
-            g.addColorStop(1,'rgba(72,199,120,0.01)');
-            return g;
-          },
-          tension:0.45,
-          pointRadius:3,
-          pointBackgroundColor:'#48c878',
-          pointBorderWidth:0,
-          hoverPointRadius:5
-        }]
-      },
+      type:'bar',
+      data:{labels:labels,datasets:[{data:cumulative,backgroundColor:barColors2,borderRadius:6,borderSkipped:false,hoverBackgroundColor:'rgba(72,199,120,0.95)'}]},
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.raw.toLocaleString()+' contactos';}}}},
