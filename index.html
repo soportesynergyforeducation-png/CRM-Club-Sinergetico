@@ -323,7 +323,10 @@
   .rc{margin-left:auto;font-size:12px;color:var(--t3);white-space:nowrap}
 
   /* ── CONTENT ── */
-  .content{flex:1;overflow-y:auto;padding:20px 24px}
+  .content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;min-height:0}
+  #page-clientes .content{padding:0;overflow:hidden}
+  #page-clientes .tw{flex:1;display:flex;flex-direction:column;border-radius:0;border-left:none;border-right:none;border-bottom:none;box-shadow:none;overflow:hidden}
+  #page-clientes #tb{flex:1;overflow-y:auto;min-height:0}
 
   /* ── PAGE VIEWS ── */
   .page-view{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0}
@@ -1100,7 +1103,7 @@
       <button class="addbtn" onclick="openAdd()">+ Agregar contacto</button>
       <div class="sw">
         <span class="sic">⌕</span>
-        <input class="si" id="qi" placeholder="Buscar por nombre, correo, teléfono…" oninput="go()">
+        <input class="si" id="qi" placeholder="Buscar por nombre, correo, teléfono…" oninput="if(this.value){switchPage('clientes')}go()">
       </div>
       <!-- Campanita de notificaciones -->
       <div id="notif-wrapper" style="position:relative;flex-shrink:0">
