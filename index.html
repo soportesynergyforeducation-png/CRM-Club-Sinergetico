@@ -3367,8 +3367,9 @@ function initCharts(){
   if(!all.length) return;
 
   var MONTHS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  var GRAY='rgba(255,255,255,0.25)';
-  var GRID='rgba(255,255,255,0.05)';
+  var isLight=(document.documentElement.getAttribute('data-theme')||'dark')==='light';
+  var GRAY=isLight?'rgba(0,0,0,0.35)':'rgba(255,255,255,0.25)';
+  var GRID=isLight?'rgba(0,0,0,0.07)':'rgba(255,255,255,0.05)';
 
   // ── Chart 1: Inscripciones por mes (bar chart) ──
   (function(){
@@ -4009,6 +4010,7 @@ function setTheme(name){
     if(btn) btn.classList.toggle('active',t===name);
   });
   try{localStorage.setItem('crm-theme',name);}catch(e){}
+  initCharts();
 }
 function toggleTheme(){ // legacy compat
   var cur=document.documentElement.getAttribute('data-theme')||'light';
