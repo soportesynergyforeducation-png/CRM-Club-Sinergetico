@@ -569,6 +569,7 @@
     transition:all .15s;
   }
   .pc:hover{color:var(--t1);background:var(--s3);border-color:var(--bdr2)}
+  #dc .pc{top:88px;right:16px}
   .ph{display:flex;align-items:center;gap:14px;margin-bottom:22px}
   .pav{
     width:50px;height:50px;border-radius:14px;
@@ -1027,7 +1028,7 @@
 
   /* ── EDIT MODE ── */
   .edit-btn{
-    position:absolute;top:16px;right:52px;
+    position:absolute;top:16px;right:16px;
     background:var(--s2);border:1px solid var(--bdr2);color:var(--t2);
     width:28px;height:28px;border-radius:8px;cursor:pointer;
     font-size:13px;display:flex;align-items:center;justify-content:center;
@@ -2474,7 +2475,7 @@ function det(i){
   document.getElementById('dc').innerHTML=`
     <button class="pc" onclick="cl('dp')">✕</button>
     <button class="edit-btn" id="edit-toggle" onclick="toggleEditMode()" title="Editar contacto">✎</button>
-    <button class="edit-btn" onclick="copyCurrentContact()" title="Copiar datos del cliente" style="right:88px">⎘</button>
+    <button class="edit-btn" onclick="copyCurrentContact()" title="Copiar datos del cliente" style="top:52px;right:16px">⎘</button>
     <div class="ph">
       <div class="pav" style="background:${grad};color:#fff;border:none;width:56px;height:56px;border-radius:16px;font-size:20px">${ini}</div>
       <div><div class="pn" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(c.nombre)||'—'}${c.nombre?`<button onclick="navigator.clipboard.writeText('${esc(c.nombre)}').then(function(){toast('✓ Nombre copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar nombre">📋</button>`:''}${(function(){
