@@ -2343,8 +2343,24 @@ function render(data){
   }).join('')+(data.length>500?`<div class="empty" style="padding:12px;font-size:12px">Mostrando 500 de ${data.length.toLocaleString()} — usa filtros para ver más</div>`:'');
 }
 
+function copyCurrentContact(){
+  var c=window._detContact; if(!c) return;
+  var lines=[
+    c.nombre    ?'Nombre: '+c.nombre:'',
+    c.correo    ?'Correo: '+c.correo:'',
+    c.telefono  ?'Teléfono: '+c.telefono:'',
+    c.pais      ?'País: '+c.pais:'',
+    c.evento    ?'Evento: '+c.evento:'',
+    c.inscripcion?'Inscripción: '+c.inscripcion:'',
+    c.acceso    ?'Acceso: '+c.acceso:'',
+    c.status    ?'Status: '+c.status:''
+  ].filter(Boolean).join('\n');
+  navigator.clipboard.writeText(lines).then(function(){toast('✓ Datos del cliente copiados');});
+}
+
 function det(i){
   const c=filtered[i]; if(!c) return;
+  window._detContact=c;
   const ini=(c.nombre||'?').split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
   const grad=avatarGrad(c.nombre);
   const sc=c.status==='ACTIVO'?'ba':'br';
@@ -2458,9 +2474,10 @@ function det(i){
   document.getElementById('dc').innerHTML=`
     <button class="pc" onclick="cl('dp')">✕</button>
     <button class="edit-btn" id="edit-toggle" onclick="toggleEditMode()" title="Editar contacto">✎</button>
+    <button class="edit-btn" onclick="copyCurrentContact()" title="Copiar datos del cliente" style="right:88px">⎘</button>
     <div class="ph">
       <div class="pav" style="background:${grad};color:#fff;border:none;width:56px;height:56px;border-radius:16px;font-size:20px">${ini}</div>
-      <div><div class="pn" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(c.nombre)||'—'}${(function(){
+      <div><div class="pn" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(c.nombre)||'—'}${c.nombre?`<button onclick="navigator.clipboard.writeText('${esc(c.nombre)}').then(function(){toast('✓ Nombre copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar nombre">📋</button>`:''}${(function(){
         if(c.acceso==='No'||c.acceso==='Revocado') return `<span class="sk-e" title="Acceso revocado">● Inactivo</span>`;
         const dFin=parseDate(finAccesoStr);
         if(!dFin) return '';
@@ -2479,7 +2496,11 @@ function det(i){
       <div class="pgrid">
         ${ef('nombre','Nombre',c.nombre)}
         ${ef('correo','Correo',c.correo)}
-        ${ef('telefono','Teléfono',c.telefono)}
+        <div class="ef pf">
+          <label>Teléfono</label>
+          <span class="ev" style="display:flex;align-items:center;gap:6px">${esc(c.telefono||'—')}${c.telefono?`<button onclick="navigator.clipboard.writeText('${esc(c.telefono)}').then(function(){toast('✓ Teléfono copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar teléfono">📋</button>`:''}</span>
+          <input class="ei" type="text" data-field="telefono" value="${esc(c.telefono||'')}" placeholder="Teléfono">
+        </div>
         ${ef('pais','País',c.pais)}
         ${ef('evento','Evento',c.evento)}
       </div>
