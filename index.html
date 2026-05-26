@@ -3437,9 +3437,14 @@ function initCharts(){
     var labels=entries.map(function(e){return e[0];});
     var data=entries.map(function(e){return e[1];});
     var colors=labels.map(function(l){var idx=ACCESO_VALUES.indexOf(l);return idx>=0?ACCESO_COLORS[idx]:'#9090a8';});
+    var totalAll=all.length;
+    var ACTIVOS_VALS=['Si','En automático','Renovación','30 dias','Renovación éste mes','Renovación 3 meses','Seguimiento renovación DLP','Seguimiento renovación MF','Seguimiento renovación Lacho'];
+    var activosCount=all.filter(function(row){
+      var v=(row.acceso||'').trim();
+      return ACTIVOS_VALS.indexOf(v)>=0;
+    }).length;
+    var pct=totalAll>0?Math.round(activosCount/totalAll*100):0;
     var total=data.reduce(function(s,v){return s+v;},0);
-    var activos=data[0]||0;
-    var pct=total>0?Math.round(activos/total*100):0;
     var el=document.getElementById('donut-pct');
     if(el) el.textContent=pct+'%';
     var ctx=document.getElementById('chart-status');
