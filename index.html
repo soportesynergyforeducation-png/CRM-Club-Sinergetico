@@ -1643,7 +1643,7 @@ async function loadPhoneSource(src){
         var name =cN>=0?(r[cN]||'').toString().trim():'';
         var pais =cP>=0?(r[cP]||'').toString().trim():'';
         var implPais=pais||(src.id==='wb-usa-wjs'||src.id==='pres-usa'?'usa':'');
-        if(phone) allData.push({email:email,phone:phone,name:name,pais:implPais,source:src.tabPrefix?tab:src.label});
+        if(phone) allData.push({email:email,phone:phone,name:name,pais:implPais,source:src.label,tab:src.tabPrefix?tab:''});
       });
     }
     if(!allData.length&&!tabsToLoad.length){phoneCacheStatus[src.id]='error:Sin tabs VENTAS';_refreshTelSrcUI();return;}
@@ -3062,7 +3062,7 @@ function runTelSearch(){
     (phoneCache[s.id]||[]).forEach(function(e){
       if(!e.email) return;
       if(!primary[e.email]) primary[e.email]=[];
-      primary[e.email].push({phone:e.phone,name:e.name,pais:e.pais,source:e.source||s.label});
+      primary[e.email].push({phone:e.phone,name:e.name,pais:e.pais,source:e.source||s.label,tab:e.tab||''});
     });
   });
 
@@ -3071,7 +3071,7 @@ function runTelSearch(){
     (phoneCache[backupSource.id]||[]).forEach(function(e){
       if(!e.email) return;
       if(!backupMap[e.email]) backupMap[e.email]=[];
-      backupMap[e.email].push({phone:e.phone,name:e.name,pais:e.pais,source:e.source||backupSource.label});
+      backupMap[e.email].push({phone:e.phone,name:e.name,pais:e.pais,source:e.source||backupSource.label,tab:e.tab||''});
     });
   }
 
@@ -3096,13 +3096,14 @@ function runTelSearch(){
       var srcColor=fromBackup?'rgba(240,168,90,0.15)':'rgba(90,219,166,0.1)';
       var srcTextColor=fromBackup?'var(--warn)':'var(--acc2)';
       var srcBorder=fromBackup?'rgba(240,168,90,0.3)':'rgba(90,219,166,0.2)';
-      var srcBadge='<span style="font-size:10px;background:'+srcColor+';color:'+srcTextColor+';border:1px solid '+srcBorder+';padding:1px 7px;border-radius:10px;font-weight:600">'+(fromBackup?'📦 ':'')+esc(best.source)+'</span>';
+      var srcLabel=(fromBackup?'📦 ':'')+esc(best.source)+(best.tab?' · '+esc(best.tab):'');
+      var srcBadge='<span style="font-size:10px;background:'+srcColor+';color:'+srcTextColor+';border:1px solid '+srcBorder+';padding:1px 7px;border-radius:10px;font-weight:600">'+srcLabel+'</span>';
       foundRows.push('<div class="tel-row found" style="flex-wrap:wrap;gap:6px">'+
         '<span class="tel-num">'+esc(fixed)+'</span>'+
         '<span style="font-size:12px;color:var(--t3);flex:1">'+esc(email)+'</span>'+
         srcBadge+
       '</div>');
-      window._telInsertMap[email]={phone:fixed,source:best.source,fromBackup:fromBackup};
+      window._telInsertMap[email]={phone:fixed,source:best.source,tab:best.tab||'',fromBackup:fromBackup};
     } else if(pendingSources>0){
       notFoundRows.push('<div class="tel-row" style="opacity:.6">'+
         '<span class="spin" style="font-size:11px;display:inline-block;color:var(--acc);margin-right:6px">↻</span>'+
@@ -3158,14 +3159,14 @@ async function _autoInsertTel(){
     (phoneCache[s.id]||[]).forEach(function(e){
       if(!e.email) return;
       if(!primary[e.email]) primary[e.email]=[];
-      primary[e.email].push({phone:e.phone,pais:e.pais,source:e.source});
+      primary[e.email].push({phone:e.phone,pais:e.pais,source:e.source,tab:e.tab||''});
     });
   });
   if(backupSrc){
     (phoneCache[backupSrc.id]||[]).forEach(function(e){
       if(!e.email) return;
       if(!backupMap[e.email]) backupMap[e.email]=[];
-      backupMap[e.email].push({phone:e.phone,pais:e.pais,source:e.source});
+      backupMap[e.email].push({phone:e.phone,pais:e.pais,source:e.source,tab:e.tab||''});
     });
   }
   var map={};
@@ -3177,7 +3178,7 @@ async function _autoInsertTel(){
     var withPhone=candidates.filter(function(x){return x.phone&&x.phone.toString().trim();});
     if(withPhone.length){
       var best=withPhone.reduce(function(a,b){return phoneScore(b.phone)>phoneScore(a.phone)?b:a;});
-      map[k]=fixPhone(best.phone,best.pais);
+      map[k]={phone:fixPhone(best.phone,best.pais),source:best.source||'',tab:best.tab||''};
     }
   });
   var count=Object.keys(map).length;
@@ -3256,6 +3257,7 @@ async function insertTelResults(){
     var entry = map[email];
     var phone = typeof entry==='object' ? entry.phone : entry;
     var source = typeof entry==='object' ? entry.source : '';
+    var tab    = typeof entry==='object' ? entry.tab    : '';
     var fromBackup = typeof entry==='object' ? entry.fromBackup : false;
     try{
       var params = new URLSearchParams();
@@ -3265,7 +3267,7 @@ async function insertTelResults(){
       await fetch(WRITER_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
       var c = all.find(function(x){return (x.correo||'').toLowerCase()===email;});
       if(c) c.telefono = phone;
-      inserted.push({email:email,phone:phone,source:source,fromBackup:fromBackup});
+      inserted.push({email:email,phone:phone,source:source,tab:tab,fromBackup:fromBackup});
       ok++;
     } catch(e){ errors++; }
   }
@@ -3278,7 +3280,8 @@ async function insertTelResults(){
     var srcColor=r.fromBackup?'rgba(240,168,90,0.15)':'rgba(90,219,166,0.1)';
     var srcTextColor=r.fromBackup?'var(--warn)':'var(--acc2)';
     var srcBorder=r.fromBackup?'rgba(240,168,90,0.3)':'rgba(90,219,166,0.2)';
-    var srcBadge=r.source?'<span style="font-size:10px;background:'+srcColor+';color:'+srcTextColor+';border:1px solid '+srcBorder+';padding:1px 7px;border-radius:10px;font-weight:600">'+(r.fromBackup?'📦 ':'')+esc(r.source)+'</span>':'';
+    var srcLabel=(r.fromBackup?'📦 ':'')+esc(r.source||'')+(r.tab?' · '+esc(r.tab):'');
+    var srcBadge=r.source?'<span style="font-size:10px;background:'+srcColor+';color:'+srcTextColor+';border:1px solid '+srcBorder+';padding:1px 7px;border-radius:10px;font-weight:600">'+srcLabel+'</span>':'';
     return '<div class="tel-row found" style="flex-wrap:wrap;gap:6px">'+
       '<span style="font-size:10px;font-weight:700;color:var(--ok);padding:1px 6px;background:rgba(90,219,100,0.12);border-radius:8px">✓ insertado</span>'+
       '<span class="tel-num">'+esc(r.phone)+'</span>'+
