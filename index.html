@@ -1584,6 +1584,66 @@ var phoneCache={};       // id -> [{email,phone,name,pais,source}]
 var phoneCacheStatus={}; // id -> 'idle'|'loading'|'ok:N'|'error:msg'
 // webinarMap se declara arriba junto a las globales
 
+// ── PERSISTENCIA DE CACHE EN LOCALSTORAGE ──
+var _PC_KEY='crm_phone_cache_v1';
+(function _loadPhoneCacheFromLS(){
+  try{
+    var raw=localStorage.getItem(_PC_KEY);
+    if(!raw) return;
+    var saved=JSON.parse(raw);
+    Object.keys(saved).forEach(function(id){
+      var entry=saved[id];
+      if(entry&&entry.data&&entry.data.length){
+        phoneCache[id]=entry.data;
+        phoneCacheStatus[id]='ok:'+entry.data.length;
+      }
+    });
+  }catch(e){}
+})();
+
+function _savePhoneCacheToLS(){
+  try{
+    var toSave={};
+    Object.keys(phoneCache).forEach(function(id){
+      toSave[id]={data:phoneCache[id],ts:Date.now()};
+    });
+    localStorage.setItem(_PC_KEY,JSON.stringify(toSave));
+  }catch(e){}
+}
+
+function _mergePhoneCache(id, newData){
+  var existing=phoneCache[id]||[];
+  var existingEmails={};
+  existing.forEach(function(e){existingEmails[e.email]=true;});
+  var added=0;
+  newData.forEach(function(e){
+    if(!existingEmails[e.email]){existing.push(e);added++;}
+    else{
+      // Actualizar teléfono si el nuevo tiene más dígitos
+      var idx=existing.findIndex(function(x){return x.email===e.email;});
+      if(idx>=0 && phoneScore(e.phone)>phoneScore(existing[idx].phone)){
+        existing[idx].phone=e.phone;
+      }
+    }
+  });
+  phoneCache[id]=existing;
+  return added;
+}
+
+function clearPhoneCache(id){
+  if(id){
+    delete phoneCache[id];
+    delete phoneCacheStatus[id];
+    try{
+      var raw=localStorage.getItem(_PC_KEY);
+      if(raw){var s=JSON.parse(raw);delete s[id];localStorage.setItem(_PC_KEY,JSON.stringify(s));}
+    }catch(e){}
+  } else {
+    phoneCache={};phoneCacheStatus={};
+    try{localStorage.removeItem(_PC_KEY);}catch(e){}
+  }
+}
+
 function savePhoneSources(){
   try{localStorage.setItem('crm_tel_sources',JSON.stringify(extraPhoneSources));}catch(e){}
 }
@@ -1647,8 +1707,9 @@ async function loadPhoneSource(src){
       });
     }
     if(!allData.length&&!tabsToLoad.length){phoneCacheStatus[src.id]='error:Sin tabs VENTAS';_refreshTelSrcUI();return;}
-    phoneCache[src.id]=allData;
-    phoneCacheStatus[src.id]='ok:'+allData.length;
+    _mergePhoneCache(src.id, allData);
+    phoneCacheStatus[src.id]='ok:'+phoneCache[src.id].length;
+    _savePhoneCacheToLS();
     _refreshTelSrcUI();
     updateTelQuickBadge();
     if(document.getElementById('tp')&&document.getElementById('tp').classList.contains('show')) runTelSearch();
@@ -1695,7 +1756,7 @@ function togglePSrc(i){
 
 function removePSrc(i){
   var allSrc=getAllPhoneSources();var s=allSrc[i];if(s&&s.fixed){toast('⚠ Esta fuente es fija y no se puede eliminar');return;}var ui=extraPhoneSources.indexOf(s);if(ui>=0)extraPhoneSources.splice(ui,1);
-  if(s){delete phoneCache[s.id];delete phoneCacheStatus[s.id];}
+  if(s){clearPhoneCache(s.id);}
   savePhoneSources(); _refreshTelSrcUI();
   if(document.getElementById('tp')&&document.getElementById('tp').classList.contains('show')) runTelSearch();
 }
@@ -3003,6 +3064,7 @@ function openTelTool(){
         <span style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Fuentes de datos</span>
         <div style="display:flex;gap:6px">
           <button onclick="loadAllPSrc()" style="font-size:11px;background:var(--s3);border:1px solid var(--bdr2);color:var(--t2);padding:4px 10px;border-radius:7px;cursor:pointer;font-family:var(--font)">↻ Recargar todas</button>
+          <button onclick="if(confirm('¿Limpiar todo el cache local? Tendrás que recargar las fuentes.')){clearPhoneCache();phoneCacheStatus={};_refreshTelSrcUI();runTelSearch();toast('Cache limpiado');}" style="font-size:11px;background:rgba(220,60,60,0.08);border:1px solid rgba(220,60,60,0.25);color:var(--err);padding:4px 10px;border-radius:7px;cursor:pointer;font-family:var(--font)">🗑 Limpiar cache</button>
           <button onclick="showAddSrcForm()" style="font-size:11px;background:rgba(139,124,248,0.12);border:1px solid var(--bdr3);color:var(--acc);padding:4px 10px;border-radius:7px;cursor:pointer;font-family:var(--font);font-weight:600">+ Agregar fuente</button>
         </div>
       </div>
@@ -3036,10 +3098,10 @@ function openTelTool(){
     </div>`;
   document.getElementById('tp').classList.add('show');
   _refreshTelSrcUI();
-  // Auto-cargar fuentes que no se han cargado aún, luego buscar
-  if(srcPending>0){
-    loadAllPSrc();
-    // Esperar a que carguen antes de buscar (runTelSearch se llama desde loadPhoneSource al terminar)
+  // Auto-cargar solo fuentes que no están en cache (ni en memoria ni en localStorage)
+  var sinCache=getAllPhoneSources().filter(function(s){return s.enabled!==false&&(!phoneCache[s.id]||!phoneCache[s.id].length);});
+  if(sinCache.length>0){
+    sinCache.forEach(function(s){loadPhoneSource(s);});
   }
   runTelSearch();
 }
