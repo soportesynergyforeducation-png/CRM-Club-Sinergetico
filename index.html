@@ -144,25 +144,25 @@
   /* ── SIDEBAR ── */
   /* ── GLASSMORPHISM GLOBAL ── */
   :root{
-    --glass-sidebar:rgba(255,255,255,0.78);
-    --glass-topbar:rgba(255,255,255,0.75);
-    --glass-frow:rgba(255,255,255,0.70);
-    --glass-content:rgba(240,242,245,0.30);
-    --glass-tw:rgba(255,255,255,0.72);
+    --glass-sidebar:rgba(255,255,255,0.55);
+    --glass-topbar:rgba(255,255,255,0.52);
+    --glass-frow:rgba(255,255,255,0.48);
+    --glass-content:rgba(240,242,245,0.15);
+    --glass-tw:rgba(255,255,255,0.55);
   }
   [data-theme="dark"]{
-    --glass-sidebar:rgba(13,13,22,0.80);
-    --glass-topbar:rgba(13,13,22,0.78);
-    --glass-frow:rgba(13,13,22,0.72);
-    --glass-content:rgba(10,10,16,0.25);
-    --glass-tw:rgba(19,19,28,0.80);
+    --glass-sidebar:rgba(13,13,22,0.55);
+    --glass-topbar:rgba(13,13,22,0.52);
+    --glass-frow:rgba(13,13,22,0.48);
+    --glass-content:rgba(10,10,16,0.10);
+    --glass-tw:rgba(19,19,28,0.55);
   }
   [data-theme="blue"]{
-    --glass-sidebar:rgba(5,16,31,0.82);
-    --glass-topbar:rgba(5,16,31,0.80);
-    --glass-frow:rgba(5,16,31,0.74);
-    --glass-content:rgba(5,16,31,0.22);
-    --glass-tw:rgba(11,26,46,0.82);
+    --glass-sidebar:rgba(5,16,31,0.55);
+    --glass-topbar:rgba(5,16,31,0.52);
+    --glass-frow:rgba(5,16,31,0.48);
+    --glass-content:rgba(5,16,31,0.10);
+    --glass-tw:rgba(11,26,46,0.55);
   }
 
   .sidebar{
@@ -4178,7 +4178,7 @@ if('serviceWorker' in navigator){
   var canvas=document.getElementById('bg-canvas');
   var ctx=canvas.getContext('2d');
   var W,H,pts,raf;
-  var COUNT=55, CONN_DIST=140, SPEED=0.28;
+  var COUNT=70, CONN_DIST=160, SPEED=0.32;
 
   function getThemeColors(){
     var theme=document.documentElement.getAttribute('data-theme')||'light';
@@ -4198,7 +4198,7 @@ if('serviceWorker' in navigator){
       pts.push({
         x:Math.random()*W, y:Math.random()*H,
         vx:(Math.random()-.5)*SPEED, vy:(Math.random()-.5)*SPEED,
-        r:Math.random()*1.4+0.8
+        r:Math.random()*2.2+1.2
       });
     }
   }
@@ -4208,8 +4208,8 @@ if('serviceWorker' in navigator){
     ctx.fillStyle=c.bg;
     ctx.fillRect(0,0,W,H);
     var theme=document.documentElement.getAttribute('data-theme')||'light';
-    var dotAlpha = theme==='light'?0.35:0.45;
-    var lineAlpha = theme==='light'?0.12:0.18;
+    var dotAlpha = theme==='light'?0.55:0.70;
+    var lineAlpha = theme==='light'?0.22:0.35;
 
     for(var i=0;i<COUNT;i++){
       var a=pts[i];
@@ -4231,6 +4231,12 @@ if('serviceWorker' in navigator){
 
     for(var i=0;i<COUNT;i++){
       var p=pts[i];
+      // glow
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r*3.5,0,Math.PI*2);
+      ctx.fillStyle=c.dot+'0.08)';
+      ctx.fill();
+      // dot
       ctx.beginPath();
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
       ctx.fillStyle=c.dot+dotAlpha+')';
