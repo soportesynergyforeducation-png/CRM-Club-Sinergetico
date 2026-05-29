@@ -137,7 +137,8 @@
   }
 
   html,body{height:100%;overflow:hidden}
-  body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  body{background:transparent;color:var(--t1);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  html{background:var(--bg)}
   .app{display:flex;height:100vh}
 
   /* ── SIDEBAR ── */
@@ -4154,9 +4155,9 @@ if('serviceWorker' in navigator){
 
   function getThemeColors(){
     var theme=document.documentElement.getAttribute('data-theme')||'light';
-    if(theme==='dark')  return {dot:'rgba(160,150,255,',line:'rgba(160,150,255,'};
-    if(theme==='blue')  return {dot:'rgba(100,180,255,', line:'rgba(100,180,255,'};
-    return                     {dot:'rgba(140,100,200,', line:'rgba(100,80,180,'};
+    if(theme==='dark')  return {bg:'#0a0a10', dot:'rgba(160,150,255,',line:'rgba(160,150,255,'};
+    if(theme==='blue')  return {bg:'#05101f', dot:'rgba(100,180,255,', line:'rgba(100,180,255,'};
+    return                     {bg:'#f0f2f5', dot:'rgba(140,100,200,', line:'rgba(100,80,180,'};
   }
 
   function resize(){
@@ -4176,8 +4177,9 @@ if('serviceWorker' in navigator){
   }
 
   function draw(){
-    ctx.clearRect(0,0,W,H);
     var c=getThemeColors();
+    ctx.fillStyle=c.bg;
+    ctx.fillRect(0,0,W,H);
     var theme=document.documentElement.getAttribute('data-theme')||'light';
     var dotAlpha = theme==='light'?0.22:0.30;
     var lineAlpha = theme==='light'?0.07:0.12;
