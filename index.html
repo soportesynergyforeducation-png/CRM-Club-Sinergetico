@@ -390,7 +390,7 @@
   .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
   .kpi-grid-sm{display:none}
   .kpi-card{
-    background:rgba(255,255,255,.06);
+    background:rgba(10,10,16,0.72);
     border:1px solid rgba(255,255,255,.12);
     border-radius:18px;padding:18px 20px;
     display:flex;align-items:flex-start;gap:14px;
@@ -444,7 +444,7 @@
     gap:14px;
   }
   .dash-glass{
-    background:rgba(255,255,255,.06);
+    background:rgba(10,10,16,0.72);
     border:1px solid rgba(255,255,255,.12);
     border-radius:18px;padding:20px 22px;
     position:relative;overflow:hidden;
@@ -467,16 +467,19 @@
 
   /* ── LIGHT THEME: dashboard glass overrides ── */
   [data-theme="light"] .kpi-card{
-    background:rgba(255,255,255,.55);
+    background:rgba(240,242,248,0.72);
     border:1px solid rgba(0,0,0,.09);
     box-shadow:0 2px 16px rgba(0,0,0,.05);
   }
-  [data-theme="light"] .kpi-card:hover{background:rgba(255,255,255,.70)}
+  [data-theme="light"] .kpi-card:hover{background:rgba(240,242,248,0.85)}
   [data-theme="light"] .dash-glass{
-    background:rgba(255,255,255,.50);
+    background:rgba(240,242,248,0.72);
     border:1px solid rgba(0,0,0,.09);
     box-shadow:0 4px 24px rgba(0,0,0,.05);
   }
+  [data-theme="blue"] .kpi-card{background:rgba(5,16,31,0.72);border-color:rgba(255,255,255,.12)}
+  [data-theme="blue"] .kpi-card:hover{background:rgba(5,16,31,0.85)}
+  [data-theme="blue"] .dash-glass{background:rgba(5,16,31,0.72);border-color:rgba(255,255,255,.12)}
   [data-theme="light"] .dash-glass::before{
     background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
   }
