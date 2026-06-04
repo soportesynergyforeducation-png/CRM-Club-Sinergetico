@@ -2401,7 +2401,7 @@ function render(data){
   if(!data.length){document.getElementById('tb').innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Sin resultados</div><div class="empty-sub">No hay contactos que coincidan con tu búsqueda o filtro activo</div></div>';return;}
   document.getElementById('tb').innerHTML=data.slice(0,500).map((c,i)=>{
     const ini=(c.nombre||'?').split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
-    const grad=avatarGrad(c.nombre);
+    const grad=avatarGrad();
     const _vRef=c.memVence||c.skVence;
     const _mRef=c.memTipo||c.skMem;
     const vb=_vRef?vBadge(_vRef,c.inscripcion,_mRef):`<span class="sk-n">Sin registro</span>`;
@@ -2448,7 +2448,7 @@ function det(i){
   const c=filtered[i]; if(!c) return;
   window._detContact=c;
   const ini=(c.nombre||'?').split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
-  const grad=avatarGrad(c.nombre);
+  const grad=avatarGrad();
   const sc=c.status==='ACTIVO'?'ba':'br';
   const note=notes[c.id]||c.notas||'';
   const rawTel=(c.telefono||'').replace(/\D/g,'');
@@ -2866,12 +2866,9 @@ lucide.createIcons();
 
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function avatarGrad(name){
-  var s=name||'?',h=0;
-  for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))&0xffffffff;
-  var hue=Math.abs(h)%360;
-  var hue2=(hue+40)%360;
-  return 'linear-gradient(135deg,hsl('+hue+',65%,52%),hsl('+hue2+',70%,38%))';
+function avatarGrad(){
+  var theme=document.documentElement.getAttribute('data-theme')||'light';
+  return theme==='light'?'#1c1c2e':'rgba(255,255,255,0.13)';
 }
 function toast(m){const t=document.getElementById('tst');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
