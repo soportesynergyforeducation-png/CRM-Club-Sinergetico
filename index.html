@@ -1114,6 +1114,7 @@
 </head>
 <body>
 <canvas id="bg-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
+<div id="theme-overlay" style="position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.28s ease;background:#000"></div>
 <div class="app" style="position:relative">
 
   <!-- SIDEBAR -->
@@ -4115,15 +4116,20 @@ document.addEventListener('keydown',function(e){
 });
 
 function setTheme(name){
-  var html=document.documentElement;
-  if(name==='light') html.removeAttribute('data-theme');
-  else html.setAttribute('data-theme',name);
-  ['light','dark','blue'].forEach(function(t){
-    var btn=document.getElementById('tbtn-'+t);
-    if(btn) btn.classList.toggle('active',t===name);
-  });
-  try{localStorage.setItem('crm-theme',name);}catch(e){}
-  initCharts();
+  var ov=document.getElementById('theme-overlay');
+  ov.style.opacity='1';
+  setTimeout(function(){
+    var html=document.documentElement;
+    if(name==='light') html.removeAttribute('data-theme');
+    else html.setAttribute('data-theme',name);
+    ['light','dark','blue'].forEach(function(t){
+      var btn=document.getElementById('tbtn-'+t);
+      if(btn) btn.classList.toggle('active',t===name);
+    });
+    try{localStorage.setItem('crm-theme',name);}catch(e){}
+    initCharts();
+    ov.style.opacity='0';
+  },280);
 }
 function toggleTheme(){ // legacy compat
   var cur=document.documentElement.getAttribute('data-theme')||'light';
