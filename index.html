@@ -1107,6 +1107,14 @@
   .dash-toggle-btn.open .dash-arrow{transform:rotate(180deg)}
   .dash-wrapper{overflow:hidden;max-height:0;transition:max-height .3s cubic-bezier(.4,0,.2,1),opacity .25s;opacity:0}
   .dash-wrapper.open{max-height:400px;opacity:1}
+
+  /* ── MODO LECTOR: ocultar/desactivar todo lo que escribe datos ── */
+  body.lector-mode .addbtn,
+  body.lector-mode .mbb-add,
+  body.lector-mode .telbtn,
+  body.lector-mode .mbb-tel,
+  body.lector-mode #edit-toggle,
+  body.lector-mode .ni[onclick="openSkoolSync()"]{display:none!important}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -1115,6 +1123,17 @@
 <body>
 <canvas id="bg-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
 <div id="theme-overlay" style="position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.28s ease;background:#000"></div>
+
+<div id="access-gate" style="position:fixed;inset:0;z-index:10000;background:#0f1115;display:flex;align-items:center;justify-content:center;font-family:var(--font, system-ui)">
+  <div style="background:#1a1d24;border:1px solid #2a2e38;border-radius:16px;padding:32px;width:300px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:6px">🔒 Acceso CRM</div>
+    <div style="font-size:12px;color:#8a8f9a;margin-bottom:18px">Ingresa tu código de acceso</div>
+    <input id="access-code-input" type="password" placeholder="Código" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2e38;background:#0f1115;color:#fff;font-size:14px;margin-bottom:10px;box-sizing:border-box" onkeydown="if(event.key==='Enter')checkAccessCode()">
+    <button onclick="checkAccessCode()" style="width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#c0152a,#9b0e1f);color:#fff;font-weight:700;font-size:14px;cursor:pointer">Entrar</button>
+    <div id="access-gate-err" style="color:#e25555;font-size:12px;margin-top:10px;display:none">Código incorrecto</div>
+  </div>
+</div>
+
 <div class="app" style="position:relative">
 
   <!-- SIDEBAR -->
@@ -1152,6 +1171,7 @@
       <div class="ss" id="ss">Conectando…</div>
       <div id="rt-status" style="font-size:10px;color:var(--t3);text-align:center;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:5px"><span id="rt-dot" style="width:7px;height:7px;border-radius:50%;background:var(--t3);display:inline-block;flex-shrink:0"></span><span id="rt-label">Conectando Firebase…</span></div>
       <button class="sbtn" style="margin-top:6px;font-size:11px;opacity:.75" onclick="openConfig()">⚙ Configuración</button>
+      <button class="sbtn" style="margin-top:6px;font-size:11px;opacity:.75" onclick="cerrarSesionCRM()">↪ Cambiar perfil</button>
       <div style="display:flex;justify-content:center;margin-top:10px">
         <div class="theme-selector">
           <button class="theme-btn tbtn-light active" id="tbtn-light" onclick="setTheme('light')">
@@ -1780,6 +1800,7 @@ function togglePSrc(i){
 }
 
 function removePSrc(i){
+  if(isLector()){toast('⚠ Modo lectura: no puedes eliminar fuentes');return;}
   var allSrc=getAllPhoneSources();var s=allSrc[i];if(s&&s.fixed){toast('⚠ Esta fuente es fija y no se puede eliminar');return;}var ui=extraPhoneSources.indexOf(s);if(ui>=0)extraPhoneSources.splice(ui,1);
   if(s){clearPhoneCache(s.id);}
   savePhoneSources(); _refreshTelSrcUI();
@@ -1792,6 +1813,7 @@ function showAddSrcForm(){
 }
 
 function addSrcFromForm(){
+  if(isLector()){toast('⚠ Modo lectura: no puedes agregar fuentes');return;}
   var label=(document.getElementById('src-label').value||'').trim();
   var sheetRaw=(document.getElementById('src-sheet').value||'').trim();
   var tab=(document.getElementById('src-tab').value||'').trim();
@@ -2692,6 +2714,7 @@ function det(i){
 }
 
 function toggleEditMode(){
+  if(isLector()){toast('⚠ Modo lectura: no puedes editar contactos');return;}
   const panel=document.getElementById('dc');
   const btn=document.getElementById('edit-toggle');
   const isEditing=panel.classList.contains('edit-mode');
@@ -2710,6 +2733,7 @@ function toggleEditMode(){
 }
 
 async function guardarCambios(correo){
+  if(isLector()){toast('⚠ Modo lectura: no puedes guardar cambios');return;}
   if(!WRITER_URL){
     toast('⚠ Configura WRITER_URL primero');
     return;
@@ -2767,6 +2791,7 @@ function cl(id){document.getElementById(id).classList.remove('show');}
 function ovClick(e,id){if(e.target.id===id)cl(id);}
 
 function openAdd(){
+  if(isLector()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
   document.getElementById('ac').innerHTML=`
     <button class="pc" onclick="cl('ap')">✕</button>
     <div style="font-size:17px;font-weight:700;color:var(--t1);margin-bottom:18px;letter-spacing:-.2px">Agregar contacto</div>
@@ -2788,6 +2813,7 @@ function openAdd(){
 }
 
 function addC(){
+  if(isLector()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
   const n=document.getElementById('nn').value.trim(),e=document.getElementById('ne').value.trim();
   if(!n||!e){toast('⚠ Nombre y correo requeridos');return;}
   all.unshift({id:Date.now().toString(),nombre:n,correo:e.toLowerCase(),
@@ -3323,6 +3349,7 @@ function telSwitchTab(tab){
 }
 
 async function insertTelResults(){
+  if(isLector()){toast('⚠ Modo lectura: no puedes insertar teléfonos');return;}
   _cancelAutoInsert();
   var map = window._telInsertMap || {};
   // Filtrar solo los que tienen teléfono real (no 'x')
@@ -3975,6 +4002,7 @@ function _calcTipoMemPreview(mem, evento){
 }
 
 async function confirmarSkoolSync(soloConMem){
+  if(isLector()){toast('⚠ Modo lectura: no puedes sincronizar a Skool');return;}
   var lista=soloConMem
     ?_skoolSyncPendientes.filter(function(p){return p.membresia;})
     :_skoolSyncPendientes;
@@ -4061,6 +4089,43 @@ function setRTStatus(on){
     dot.classList.remove('rt-live');
     lbl.textContent='Realtime desactivado';
   }
+}
+
+// ── ACCESO POR ROL (admin / lector) ──
+// Cambia estos códigos por los que quieras usar
+var ACCESS_CODES={ 'CS-ADMIN-2026':'admin', 'CS-LECTOR-2026':'lector' };
+
+function isLector(){ return localStorage.getItem('crm_role')==='lector'; }
+
+function applyRoleUI(){
+  document.body.classList.toggle('lector-mode', isLector());
+}
+
+function checkAccessCode(){
+  var val=(document.getElementById('access-code-input').value||'').trim();
+  var role=ACCESS_CODES[val];
+  if(!role){
+    document.getElementById('access-gate-err').style.display='block';
+    return;
+  }
+  try{ localStorage.setItem('crm_role', role); }catch(e){}
+  document.getElementById('access-gate').style.display='none';
+  applyRoleUI();
+}
+
+(function(){
+  try{
+    var role=localStorage.getItem('crm_role');
+    if(role==='admin'||role==='lector'){
+      document.getElementById('access-gate').style.display='none';
+    }
+  }catch(e){}
+  window.addEventListener('DOMContentLoaded', applyRoleUI);
+})();
+
+function cerrarSesionCRM(){
+  try{ localStorage.removeItem('crm_role'); }catch(e){}
+  location.reload();
 }
 
 // ── THEME TOGGLE ──
