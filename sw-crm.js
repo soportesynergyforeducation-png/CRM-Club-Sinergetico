@@ -1,5 +1,5 @@
-// CRM Club Sinergético — Service Worker v2
-const CACHE = 'crm-cs-v2';
+// CRM Club Sinergético — Service Worker v3
+const CACHE = 'crm-cs-v3';
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 
