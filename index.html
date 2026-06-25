@@ -1168,6 +1168,7 @@
   .user-chip-name{font-size:12px;font-weight:700;color:var(--t1);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
   .user-chip-role{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
   @media(max-width:768px){ .user-chip{display:none!important} }
+  @media(max-width:768px){ .presence-panel{right:auto!important;left:0!important} }
 
   .sidebar-user{display:none;align-items:center;gap:10px;padding:10px 14px;margin:0 12px 10px;border-radius:10px;background:var(--s2);border:1px solid var(--bdr2)}
   .sidebar-user-av{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#2f74e0,#1c4fb8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
@@ -1304,7 +1305,7 @@
           <span id="presence-dot" style="width:8px;height:8px;border-radius:50%;background:#9aa3b5;flex-shrink:0"></span>
           <span id="presence-count" style="font-size:12px;font-weight:700">0</span>
         </button>
-        <div id="presence-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;left:auto;width:260px;background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:1000;overflow:hidden;max-height:340px;flex-direction:column">
+        <div id="presence-panel" class="presence-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;left:auto;width:260px;background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:1000;overflow:hidden;max-height:340px;flex-direction:column">
           <div style="padding:12px 16px;border-bottom:1px solid var(--bdr)">
             <span style="font-size:13px;font-weight:700;color:var(--t1)">En línea ahora</span>
           </div>
