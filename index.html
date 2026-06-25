@@ -4241,14 +4241,15 @@ if('serviceWorker' in navigator){
 (function(){
   var canvas=document.getElementById('bg-canvas');
   var ctx=canvas.getContext('2d');
-  var W,H,pts,raf;
-  var COUNT=70, CONN_DIST=160, SPEED=0.32;
+  var W,H,raf;
+  var INTERVAL=10000, SCAN_DURATION=1800;
+  var scanStart=-SCAN_DURATION;
 
   function getThemeColors(){
     var theme=document.documentElement.getAttribute('data-theme')||'light';
-    if(theme==='dark')  return {bg:'#0a0a10', dot:'rgba(160,150,255,',line:'rgba(160,150,255,'};
-    if(theme==='blue')  return {bg:'#05101f', dot:'rgba(100,180,255,', line:'rgba(100,180,255,'};
-    return                     {bg:'#f0f2f5', dot:'rgba(140,100,200,', line:'rgba(100,80,180,'};
+    if(theme==='dark')  return {bg:'#0a0a10', line:'160,150,255'};
+    if(theme==='blue')  return {bg:'#05101f', line:'100,180,255'};
+    return                     {bg:'#f0f2f5', line:'120,90,190'};
   }
 
   function resize(){
@@ -4256,73 +4257,44 @@ if('serviceWorker' in navigator){
     H=canvas.height=window.innerHeight;
   }
 
-  function initPts(){
-    pts=[];
-    for(var i=0;i<COUNT;i++){
-      pts.push({
-        x:Math.random()*W, y:Math.random()*H,
-        vx:(Math.random()-.5)*SPEED, vy:(Math.random()-.5)*SPEED,
-        r:Math.random()*2.5+1.5
-      });
-    }
-  }
-
-  function draw(){
+  function draw(now){
     var c=getThemeColors();
     ctx.fillStyle=c.bg;
     ctx.fillRect(0,0,W,H);
-    var theme=document.documentElement.getAttribute('data-theme')||'light';
-    var dotAlpha = theme==='light'?0.18:0.25;
-    var lineAlpha = theme==='light'?0.07:0.10;
 
-    for(var i=0;i<COUNT;i++){
-      var a=pts[i];
-      for(var j=i+1;j<COUNT;j++){
-        var b=pts[j];
-        var dx=a.x-b.x, dy=a.y-b.y;
-        var d=Math.sqrt(dx*dx+dy*dy);
-        if(d<CONN_DIST){
-          var fade=1-d/CONN_DIST;
-          ctx.beginPath();
-          ctx.moveTo(a.x,a.y);
-          ctx.lineTo(b.x,b.y);
-          ctx.strokeStyle=c.line+(lineAlpha*fade).toFixed(3)+')';
-          ctx.lineWidth=0.7;
-          ctx.stroke();
-        }
-      }
-    }
+    var elapsed=now-scanStart;
+    if(elapsed>=0 && elapsed<SCAN_DURATION){
+      var progress=elapsed/SCAN_DURATION;
+      var y=progress*(H+200)-100;
+      var bandH=140;
 
-    for(var i=0;i<COUNT;i++){
-      var p=pts[i];
-      // glow
+      var grad=ctx.createLinearGradient(0,y-bandH,0,y+bandH);
+      grad.addColorStop(0,'rgba('+c.line+',0)');
+      grad.addColorStop(0.5,'rgba('+c.line+',0.10)');
+      grad.addColorStop(1,'rgba('+c.line+',0)');
+      ctx.fillStyle=grad;
+      ctx.fillRect(0,y-bandH,W,bandH*2);
+
+      ctx.save();
+      ctx.shadowColor='rgba('+c.line+',0.9)';
+      ctx.shadowBlur=16;
+      ctx.strokeStyle='rgba('+c.line+',0.85)';
+      ctx.lineWidth=1.5;
       ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r*3.5,0,Math.PI*2);
-      ctx.fillStyle=c.dot+'0.08)';
-      ctx.fill();
-      // dot
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=c.dot+dotAlpha+')';
-      ctx.fill();
-
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<-20) p.x=W+20;
-      if(p.x>W+20) p.x=-20;
-      if(p.y<-20) p.y=H+20;
-      if(p.y>H+20) p.y=-20;
+      ctx.moveTo(0,y);
+      ctx.lineTo(W,y);
+      ctx.stroke();
+      ctx.restore();
     }
 
     raf=requestAnimationFrame(draw);
   }
 
   resize();
-  initPts();
-  draw();
-  window.addEventListener('resize',function(){
-    resize();
-    initPts();
-  });
+  raf=requestAnimationFrame(draw);
+  setInterval(function(){ scanStart=performance.now(); }, INTERVAL);
+  scanStart=performance.now();
+  window.addEventListener('resize', resize);
 })();
 </script>
 </body>
