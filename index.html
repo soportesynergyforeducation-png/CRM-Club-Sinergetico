@@ -1288,6 +1288,21 @@
           <span class="user-chip-role" id="user-chip-role">—</span>
         </div>
       </div>
+      <!-- En línea ahora -->
+      <div id="presence-wrapper" style="position:relative;flex-shrink:0">
+        <button onclick="togglePresencePanel()" style="position:relative;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:7px 10px;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:6px;transition:all .15s" title="Usuarios en línea">
+          <span id="presence-dot" style="width:8px;height:8px;border-radius:50%;background:#9aa3b5;flex-shrink:0"></span>
+          <span id="presence-count" style="font-size:12px;font-weight:700">0</span>
+        </button>
+        <div id="presence-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;left:auto;width:260px;background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:1000;overflow:hidden;max-height:340px;flex-direction:column">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--bdr)">
+            <span style="font-size:13px;font-weight:700;color:var(--t1)">En línea ahora</span>
+          </div>
+          <div id="presence-list" style="overflow-y:auto;max-height:280px">
+            <div style="text-align:center;color:var(--t3);font-size:12px;padding:20px">Nadie en línea</div>
+          </div>
+        </div>
+      </div>
       <!-- Campanita de notificaciones -->
       <div id="notif-wrapper" style="position:relative;flex-shrink:0">
         <button onclick="toggleCRMNotifPanel()" style="position:relative;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:7px;cursor:pointer;color:var(--t2);display:flex;align-items:center;justify-content:center;transition:all .15s" title="Notificaciones">
@@ -4232,6 +4247,7 @@ function checkAccessCode(){
   document.getElementById('access-gate').style.display='none';
   applyRoleUI();
   addCRMNotif('🔓 '+name+' entró como '+roleLabel(role));
+  startPresence();
 }
 
 (function(){
@@ -4243,12 +4259,91 @@ function checkAccessCode(){
     }
   }catch(e){}
   window.addEventListener('DOMContentLoaded', applyRoleUI);
+  window.addEventListener('DOMContentLoaded', startPresence);
 })();
 
 function cerrarSesionCRM(){
   try{ localStorage.removeItem('crm_role'); localStorage.removeItem('crm_username'); }catch(e){}
   location.reload();
 }
+
+// ── PRESENCIA: quién está en línea ahora ──
+var PRESENCE_TTL=70000;
+var presenceUnsub=null;
+
+function getSessionId(){
+  try{
+    var id=localStorage.getItem('crm_session_id');
+    if(!id){ id='s_'+Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('crm_session_id', id); }
+    return id;
+  }catch(e){ return 'anon_'+Date.now(); }
+}
+
+function startPresence(){
+  var name=localStorage.getItem('crm_username'), role=localStorage.getItem('crm_role');
+  if(!name||!role) return;
+  function beat(){
+    if(!crmDB){ setTimeout(beat,2000); return; }
+    crmDB.collection('crm_presence').doc(getSessionId()).set({name:name,role:role,lastSeen:Date.now()}).catch(function(){});
+  }
+  beat();
+  setInterval(beat,25000);
+  listenPresence();
+}
+
+function listenPresence(){
+  if(presenceUnsub) return;
+  if(!crmDB){ setTimeout(listenPresence,2000); return; }
+  presenceUnsub=crmDB.collection('crm_presence').onSnapshot(function(snap){
+    var now=Date.now(), users=[];
+    snap.forEach(function(d){
+      var v=d.data();
+      if(v.lastSeen && (now-v.lastSeen)<PRESENCE_TTL) users.push(v);
+    });
+    renderPresence(users);
+  }, function(){});
+}
+
+function renderPresence(users){
+  var seen={}, list=[];
+  users.forEach(function(u){
+    var k=u.name+'|'+u.role;
+    if(seen[k]) return;
+    seen[k]=true; list.push(u);
+  });
+  list.sort(function(a,b){ return (b.lastSeen||0)-(a.lastSeen||0); });
+  var count=document.getElementById('presence-count');
+  var dot=document.getElementById('presence-dot');
+  if(count) count.textContent=list.length;
+  if(dot) dot.style.background=list.length>0?'#16a34a':'#9aa3b5';
+  var el=document.getElementById('presence-list');
+  if(!el) return;
+  if(!list.length){ el.innerHTML='<div style="text-align:center;color:var(--t3);font-size:12px;padding:20px">Nadie en línea</div>'; return; }
+  el.innerHTML=list.map(function(u){
+    var ini=initialsOf(u.name);
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--bdr)">'
+      +'<div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2f74e0,#1c4fb8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;position:relative">'+ini
+      +'<span style="position:absolute;bottom:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:#16a34a;border:2px solid var(--s1)"></span></div>'
+      +'<div style="display:flex;flex-direction:column;min-width:0">'
+      +'<span style="font-size:13px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(u.name)+'</span>'
+      +'<span style="font-size:10px;color:var(--t3);text-transform:uppercase">'+roleLabel(u.role)+'</span>'
+      +'</div></div>';
+  }).join('');
+}
+
+function togglePresencePanel(){
+  var p=document.getElementById('presence-panel');
+  if(!p) return;
+  p.style.display=(p.style.display==='flex')?'none':'flex';
+}
+
+document.addEventListener('click', function(e){
+  var panel=document.getElementById('presence-panel');
+  if(!panel) return;
+  if(panel.style.display==='flex' && !e.target.closest('#presence-wrapper')){
+    panel.style.display='none';
+  }
+});
 
 // ── THEME TOGGLE ──
 // ── SIDEBAR COLLAPSE ──
