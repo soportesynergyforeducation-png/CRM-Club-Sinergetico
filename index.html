@@ -1117,9 +1117,11 @@
   body.lector-mode .telbtn,
   body.lector-mode .mbb-tel,
   body.lector-mode #edit-toggle,
-  body.lector-mode .ni[onclick="openSkoolSync()"],
-  body.lector-mode #nav-dashboard,
-  body.lector-mode #page-dashboard{display:none!important}
+  body.lector-mode #page-dashboard,
+  body.lector-mode #presence-wrapper,
+  body.lector-mode .ns,
+  body.lector-mode .sf,
+  body.lector-mode .ni:not(#nav-clientes){display:none!important}
 
   /* ── ACCESS GATE (onboarding split-screen) ── */
   .ag-wrap{position:fixed;inset:0;z-index:10000;display:flex;background:#070c16;font-family:var(--font,system-ui)}
@@ -1159,7 +1161,7 @@
   .user-chip-info{display:flex;flex-direction:column;line-height:1.15}
   .user-chip-name{font-size:12px;font-weight:700;color:var(--t1);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
   .user-chip-role{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
-  @media(max-width:768px){ .user-chip{display:none} }
+  @media(max-width:768px){ .user-chip{display:none!important} }
 
   .sidebar-user{display:none;align-items:center;gap:10px;padding:10px 14px;margin:0 12px 10px;border-radius:10px;background:var(--s2);border:1px solid var(--bdr2)}
   .sidebar-user-av{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#2f74e0,#1c4fb8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
