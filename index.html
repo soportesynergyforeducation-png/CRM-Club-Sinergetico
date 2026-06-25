@@ -1117,7 +1117,9 @@
   body.lector-mode .telbtn,
   body.lector-mode .mbb-tel,
   body.lector-mode #edit-toggle,
-  body.lector-mode .ni[onclick="openSkoolSync()"]{display:none!important}
+  body.lector-mode .ni[onclick="openSkoolSync()"],
+  body.lector-mode #nav-dashboard,
+  body.lector-mode #page-dashboard{display:none!important}
 
   /* ── ACCESS GATE (onboarding split-screen) ── */
   .ag-wrap{position:fixed;inset:0;z-index:10000;display:flex;background:#070c16;font-family:var(--font,system-ui)}
@@ -2944,6 +2946,7 @@ function sf2(f,el){
 }
 
 function switchPage(page){
+  if(isLector()) page='clientes';
   var dash=document.getElementById('page-dashboard');
   var cli=document.getElementById('page-clientes');
   var sw=document.querySelector('.sw');
@@ -4208,6 +4211,7 @@ function roleLabel(role){ return role==='admin'?'Admin':'Vendedor'; }
 function applyRoleUI(){
   document.body.classList.toggle('lector-mode', isLector());
   renderUserChips();
+  if(isLector() && typeof switchPage==='function'){ switchPage('clientes'); }
 }
 
 function renderUserChips(){
@@ -4305,13 +4309,7 @@ function listenPresence(){
 }
 
 function renderPresence(users){
-  var seen={}, list=[];
-  users.forEach(function(u){
-    var k=u.name+'|'+u.role;
-    if(seen[k]) return;
-    seen[k]=true; list.push(u);
-  });
-  list.sort(function(a,b){ return (b.lastSeen||0)-(a.lastSeen||0); });
+  var list=users.slice().sort(function(a,b){ return (b.lastSeen||0)-(a.lastSeen||0); });
   var count=document.getElementById('presence-count');
   var dot=document.getElementById('presence-dot');
   if(count) count.textContent=list.length;
