@@ -1121,7 +1121,9 @@
   body.lector-mode #presence-wrapper,
   body.lector-mode .ns,
   body.lector-mode .sf,
-  body.lector-mode .ni:not(#nav-clientes){display:none!important}
+  body.lector-mode .ni:not(#nav-clientes),
+  body.lector-mode #expBtn,
+  body.lector-mode .mbb-exp{display:none!important}
 
   /* ── ACCESS GATE (onboarding split-screen) ── */
   .ag-wrap{position:fixed;inset:0;z-index:10000;display:flex;background:#070c16;font-family:var(--font,system-ui)}
@@ -2741,6 +2743,7 @@ function det(i){
 
     ${skBlock}
     ${webinarBlock}
+    ${isLector()?'':`
     ${salesBlock}
 
     <div class="psec"><div class="pst">📝 Notas</div>
@@ -2771,6 +2774,7 @@ function det(i){
       <button class="cancelbtn" onclick="toggleEditMode()">Cancelar</button>
     </div>
     ${!writerReady?`<div class="writer-warn" style="display:block">⚠ Configura WRITER_URL en el código para habilitar la escritura en Sheets</div>`:''}
+    `}
   `;
   document.getElementById('dp').classList.add('show');
   // ── Marcar campos como "sucios" solo cuando el usuario los toca directamente ──
@@ -3014,6 +3018,7 @@ function closeSidebar(){
 }
 
 function exportCSV(){
+  if(isLector()){toast('⚠ Modo lectura: no puedes exportar');return;}
   if(!filtered.length){toast('⚠ No hay contactos para exportar');return;}
   const H=['ID','Nombre','Correo','Pais','Telefono','Inscripcion','Fecha Evento','Evento','Acceso','WhatsApp','Renovacion','Notas','Otras Notas','Telegram','Happiness','Encuesta','Soporte','Status','Tipo Membresia','Fecha Vence Skool','Invitacion Skool','Membresia Skool (Sheet2)','Vence Skool (Sheet2)','Hoja Skool','Estado Skool'];
   function q(v){var s=String(v||'').replace(/"/g,'""');return(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)?'"'+s+'"':s;}
