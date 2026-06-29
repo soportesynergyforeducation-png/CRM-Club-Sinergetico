@@ -3045,7 +3045,6 @@ function det(i){
     </div>
 
     ${skBlock}
-    ${webinarBlock}
   `;
 
   const seguimientoTab=`<div class="psec"><div class="pst">Seguimiento de llamada</div>
@@ -3120,7 +3119,7 @@ function det(i){
 
     <div class="ctab-panel on" data-ctab-panel="resumen">${resumenTab}</div>
     <div class="ctab-panel" data-ctab-panel="membresias">${membresiasTab}</div>
-    ${lector?'':`<div class="ctab-panel" data-ctab-panel="ventas">${salesBlock}</div>`}
+    ${lector?'':`<div class="ctab-panel" data-ctab-panel="ventas">${webinarBlock}${salesBlock}</div>`}
     ${lector?'':`<div class="ctab-panel" data-ctab-panel="notas">${notasTab}</div>`}
     <div class="ctab-panel" data-ctab-panel="seguimiento">${seguimientoTab}</div>
     <div class="ctab-panel" data-ctab-panel="actividad">${actividadTab}</div>
