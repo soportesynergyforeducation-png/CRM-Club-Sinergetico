@@ -3189,6 +3189,8 @@ function toggleEditMode(){
     panel.classList.add('edit-mode');
     btn.classList.add('active');
     btn.title='Cancelar edición';
+    // Los campos editables viven en la pestaña "Membresías" — saltar ahí para que se vean de inmediato
+    if(typeof showClientTab==='function') showClientTab('membresias');
     // Enfocar primer input
     const first=panel.querySelector('.ei');
     if(first) setTimeout(()=>first.focus(),50);
