@@ -2283,7 +2283,7 @@ async function loadWebinarMap(){
 // ── BOLETOS SYNERGY: inventario por evento + duración de membresía ──
 async function loadTicketsTable(){
   try{
-    var cached=localStorage.getItem('crm_tickets_cache_v2');
+    var cached=localStorage.getItem('crm_tickets_cache_v3');
     var cachedTs=parseInt(localStorage.getItem('crm_tickets_cache_ts')||'0');
     var horas=(Date.now()-cachedTs)/3600000;
     if(cached&&horas<24){ ticketsByEvent=JSON.parse(cached); return; }
@@ -2295,11 +2295,13 @@ async function loadTicketsTable(){
     var sheet0=sheets.find(function(s){return s.properties.sheetId===0;})||sheets[0];
     if(!sheet0) return;
     var rows=await fetchR(TICKETS_SHEET_ID,"'"+sheet0.properties.title+"'!A1:Z300");
-    if(!rows.length) return;
-    var headers=rows[0].map(function(h){return (h||'').toString().toLowerCase();});
+    // La hoja tiene 3 filas de encabezado: fila1="Boletos" (grupo), fila2=duración, fila3=categoría/país
+    if(rows.length<4) return;
+    var durRow=(rows[1]||[]).map(function(h){return (h||'').toString().toLowerCase().trim();});
+    var catRow=(rows[2]||[]).map(function(h){return (h||'').toString().toLowerCase().trim();});
     function findCol(durTok,cat,country){
-      for(var i=0;i<headers.length;i++){
-        if(headers[i].includes(durTok)&&headers[i].includes(cat)&&headers[i].includes(country)) return i;
+      for(var i=3;i<durRow.length;i++){
+        if(durRow[i]&&durRow[i].includes(durTok)&&catRow[i]&&catRow[i].includes(cat)&&catRow[i].includes(country)) return i;
       }
       return -1;
     }
@@ -2310,9 +2312,9 @@ async function loadTicketsTable(){
       vip_us_3:findCol('3 mes','vip','us'),   vip_us_6:findCol('6 mes','vip','us'),   vip_us_12:findCol('12 mes','vip','us')
     };
     var blackIdx=-1;
-    for(var bi=0;bi<headers.length;bi++){ if(headers[bi].includes('black')){ blackIdx=bi; break; } }
+    for(var bi=3;bi<durRow.length;bi++){ if(durRow[bi]==='black'){ blackIdx=bi; break; } }
     var map={};
-    rows.slice(1).forEach(function(r){
+    rows.slice(3).forEach(function(r){
       var evento=(r[0]||'').toString().trim();
       if(!evento) return;
       var cols={};
@@ -2321,7 +2323,7 @@ async function loadTicketsTable(){
     });
     ticketsByEvent=map;
     try{
-      localStorage.setItem('crm_tickets_cache_v2', JSON.stringify(map));
+      localStorage.setItem('crm_tickets_cache_v3', JSON.stringify(map));
       localStorage.setItem('crm_tickets_cache_ts', Date.now().toString());
     }catch(e){}
   }catch(e){ console.warn('loadTicketsTable error:', e.message); }
