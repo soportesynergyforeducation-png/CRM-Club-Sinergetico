@@ -2920,6 +2920,18 @@ function det(i){
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
       <div>${chipsHtml}</div>
     </div>`;
+  } else {
+    ticketBlock=`<div class="info-card">
+      <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy</span></div>
+      <span class="sk-n">${Object.keys(ticketsByEvent).length?'Sin información de boletos para "'+esc(c.evento||'este evento')+'"':'Cargando boletos…'}</span>
+    </div>`;
+  }
+  // Si aún no se ha cargado el inventario de boletos, cargarlo y refrescar esta ficha
+  if(!Object.keys(ticketsByEvent).length && !window._ticketsLoadAttempted){
+    window._ticketsLoadAttempted=true;
+    loadTicketsTable().then(function(){
+      if(window._detContact===c) det(i);
+    });
   }
 
   const resumenTab=`<div class="resumen-grid">
