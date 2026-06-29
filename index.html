@@ -2343,9 +2343,11 @@ function getTicketInfo(c, finAccesoStr){
   var dFin=parseDate(finAccesoStr);
   if(!dFin||dFin<TICKETS_CUTOFF) return {active:false};
   var eventoKey=(c.evento||'').toString().trim().toLowerCase();
+  var accesoKey=(c.acceso||'').toString().trim().toLowerCase();
 
-  // Caso especial "Renovación": el boleto depende del país del cliente, no de columnas por duración
-  if(eventoKey==='renovacion'||eventoKey==='renovación'){
+  // Caso especial: Plataforma/Acceso = "Renovación" (en cualquiera de sus variantes) —
+  // el boleto depende del país del cliente, no del evento ni de columnas por duración
+  if(accesoKey.indexOf('renov')>=0){
     var info=getCountryInfo(c.pais);
     var k=(info&&info.label||c.pais||'').toLowerCase();
     var isMx=k.indexOf('méxico')>=0||k.indexOf('mexico')>=0;
