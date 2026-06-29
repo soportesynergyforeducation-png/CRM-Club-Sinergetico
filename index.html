@@ -614,6 +614,92 @@
     border-bottom:1px solid var(--bdr);
   }
   .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* ── FICHA DE CLIENTE: header, tabs, resumen ── */
+  #dc{width:920px;max-width:94vw}
+  .ch-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .ch-id{display:flex;align-items:center;gap:14px;min-width:0}
+  .ch-id-text{min-width:0}
+  .ch-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ch-name{font-size:18px;font-weight:700;color:var(--t1);letter-spacing:-.2px}
+  .ch-line{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3);margin-top:4px}
+  .ch-line .lc{width:13px;height:13px;flex-shrink:0}
+  .ch-line a{color:var(--acc);text-decoration:none}
+  .ch-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .ch-meta{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--t3);white-space:nowrap}
+  .ch-meta .lc{width:14px;height:14px;color:var(--t3)}
+  .ch-meta strong{color:var(--t1);font-weight:700;font-size:13px;display:block;margin-top:1px}
+  .ch-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ch-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--bdr2);background:var(--s2);color:var(--t1);text-decoration:none;white-space:nowrap;transition:all .15s;font-family:var(--font)}
+  .ch-btn .lc{width:14px;height:14px}
+  .ch-btn-wa{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#1ea854}
+  .ch-btn-call{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.3);color:#3b82f6}
+  .ch-btn-edit.active{background:var(--acc);border-color:var(--acc);color:#fff}
+  .ch-btn-disabled{opacity:.4;pointer-events:none}
+  .ch-kebab-wrap{position:relative}
+  .ch-btn-kebab{padding:9px 11px;font-size:16px;line-height:1}
+  .ch-kebab-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;box-shadow:var(--shadow-md);min-width:170px;z-index:50;overflow:hidden;flex-direction:column}
+  .ch-kebab-menu.show{display:flex}
+  .ch-kebab-menu button{background:none;border:none;text-align:left;padding:10px 14px;font-size:12px;color:var(--t2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:8px}
+  .ch-kebab-menu button:hover{background:var(--s2);color:var(--t1)}
+
+  .ctabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--bdr);margin-bottom:20px}
+  .ctabs::-webkit-scrollbar{display:none}
+  .ctab{display:flex;align-items:center;gap:6px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--t3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;font-family:var(--font);transition:all .15s}
+  .ctab .lc{width:14px;height:14px}
+  .ctab:hover{color:var(--t1)}
+  .ctab.on{color:var(--acc);border-bottom-color:var(--acc)}
+  .ctab-panel{display:none}
+  .ctab-panel.on{display:block}
+
+  .resumen-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .info-card{background:var(--s2);border:1px solid var(--bdr2);border-radius:14px;padding:16px}
+  .info-card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .info-card-h span{font-size:13px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:7px}
+  .info-card-h .lc{width:16px;height:16px;color:var(--acc)}
+  .info-card-link{font-size:11px;color:var(--acc);cursor:pointer;background:var(--s1);border:1px solid var(--bdr3);padding:4px 9px;border-radius:8px}
+  .info-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:13px}
+  .info-row-icon{width:24px;height:24px;border-radius:7px;background:var(--s1);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--t3)}
+  .info-row-icon .lc{width:13px;height:13px}
+  .info-row-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+  .info-row-value{font-size:13px;color:var(--t1);font-weight:600;word-break:break-word}
+
+  .acc-card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:13px;margin-bottom:12px}
+  .acc-card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .acc-card-h-l{display:flex;align-items:center;gap:9px}
+  .acc-card-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .acc-card-icon .lc{width:15px;height:15px;color:#fff}
+  .acc-card-h-l strong{font-size:13px;color:var(--t1)}
+  .acc-mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .acc-mini{display:flex;align-items:flex-start;gap:6px}
+  .acc-mini .lc{width:13px;height:13px;color:var(--t3);margin-top:1px;flex-shrink:0}
+  .acc-mini-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px}
+  .acc-mini-value{font-size:12px;color:var(--t1);font-weight:700;margin-top:1px}
+
+  .paso-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+  .paso-row:last-child{border-bottom:none}
+  .paso-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .paso-icon .lc{width:12px;height:12px}
+  .paso-body{flex:1;min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .paso-title{font-size:12px;font-weight:600;color:var(--t1)}
+  .paso-pill{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .paso-right{font-size:11px;color:var(--t3);white-space:nowrap;flex-shrink:0}
+
+  .client-banner{display:flex;align-items:center;gap:12px;border-radius:14px;padding:14px 16px;margin-top:18px}
+  .client-banner-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .client-banner-icon .lc{width:17px;height:17px;color:#fff}
+  .client-banner-title{font-size:13px;font-weight:700;color:var(--t1)}
+  .client-banner-sub{font-size:12px;color:var(--t3);margin-top:2px}
+
+  @media(max-width:768px){
+    .resumen-grid{grid-template-columns:1fr}
+    .acc-mini-grid{grid-template-columns:1fr 1fr}
+    .ch-top{flex-direction:column}
+    .ch-actions{width:100%}
+    .ch-btn{flex:1;justify-content:center}
+    .ch-kebab-wrap .ch-btn{flex:none}
+  }
+
   .pf label{font-size:11px;color:var(--t3);display:block;margin-bottom:3px;font-weight:500}
   .pf span{font-size:13px;color:var(--t1)}
   .wab{
@@ -2564,6 +2650,23 @@ function render(data){
   }).join('')+(data.length>500?`<div class="empty" style="padding:12px;font-size:12px">Mostrando 500 de ${data.length.toLocaleString()} — usa filtros para ver más</div>`:'');
 }
 
+function showClientTab(name){
+  document.querySelectorAll('#dc .ctab').forEach(function(b){ b.classList.toggle('on', b.dataset.ctab===name); });
+  document.querySelectorAll('#dc .ctab-panel').forEach(function(p){ p.classList.toggle('on', p.dataset.ctabPanel===name); });
+}
+
+function toggleClientKebab(e){
+  if(e) e.stopPropagation();
+  var m=document.getElementById('client-kebab-menu');
+  if(!m) return;
+  m.classList.toggle('show');
+}
+document.addEventListener('click', function(e){
+  var menu=document.getElementById('client-kebab-menu');
+  if(!menu) return;
+  if(menu.classList.contains('show') && !e.target.closest('.ch-kebab-wrap')){ menu.classList.remove('show'); }
+});
+
 function copyCurrentContact(){
   var c=window._detContact; if(!c) return;
   var lines=[
@@ -2691,35 +2794,103 @@ function det(i){
   }
 
   const writerReady=!!WRITER_URL;
+  const lector=isLector();
 
-  document.getElementById('dc').innerHTML=`
-    <button class="pc" onclick="cl('dp')">✕</button>
-    <button class="edit-btn" id="edit-toggle" onclick="toggleEditMode()" title="Editar contacto" style="top:52px">✎</button>
-    <button class="edit-btn" onclick="copyCurrentContact()" title="Copiar datos del cliente" style="top:88px;right:16px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-    <div class="ph">
-      <div class="pav" style="background:${grad};color:#fff;border:none;width:56px;height:56px;border-radius:16px;font-size:20px">${ini}</div>
-      <div><div class="pn" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(c.nombre)||'—'}${c.nombre?`<button onclick="navigator.clipboard.writeText('${esc(c.nombre)}').then(function(){toast('✓ Nombre copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar nombre"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`:''}${(function(){
-        if(c.acceso==='No'||c.acceso==='Revocado') return `<span class="sk-e" title="Acceso revocado">● Inactivo</span>`;
-        const dFin=parseDate(finAccesoStr);
-        if(!dFin) return '';
-        const dias=daysUntil(dFin);
-        if(dias===null) return '';
-        if(dias>=0) return `<span class="sk-ok" title="Membresía anual vigente · vence ${finAccesoStr}">● Activo</span>`;
-        return `<span class="sk-e" title="Membresía anual vencida · venció ${finAccesoStr}">● Inactivo</span>`;
-      })()}</div>
-      <div class="ps" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span>${esc(c.correo)||''}</span>
-        ${c.correo?`<button onclick="navigator.clipboard.writeText('${esc(c.correo)}').then(function(){toast('✓ Correo copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar correo"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`:''}
-      </div></div>
+  // ── Estado calculado para Resumen / banner / pasos ──
+  const dFinClub=parseDate(finAccesoStr);
+  const diasClub=dFinClub?daysUntil(dFinClub):null;
+  const clubRevocado=c.acceso==='No'||c.acceso==='Revocado';
+  const clubActivo=!clubRevocado&&diasClub!==null&&diasClub>=0;
+  const statusBadge=clubRevocado?`<span class="sk-e">● Inactivo</span>`:diasClub===null?'':diasClub>=0?`<span class="sk-ok">● Activo</span>`:`<span class="sk-e">● Inactivo</span>`;
+  const skoolActivo=_daysRef!==null&&_daysRef>=0;
+  const tieneSkool=!!(_skVenceRef||_skTipoRef);
+
+  function copyBtn(field,val,label){
+    return val?`<button onclick="navigator.clipboard.writeText('${esc(val)}').then(function(){toast('✓ ${label} copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar ${label.toLowerCase()}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`:'';
+  }
+  function infoRow(icon,label,value){
+    return `<div class="info-row"><div class="info-row-icon"><i data-lucide="${icon}" class="lc"></i></div><div><div class="info-row-label">${label}</div><div class="info-row-value">${esc(value)||'—'}</div></div></div>`;
+  }
+  function pasoRow(state,title,pillText,rightText){
+    const cfg=state==='ok'?{bg:'var(--ok)',pillBg:'rgba(22,163,74,0.12)',pillColor:'var(--ok)',icon:'check'}
+      :state==='warn'?{bg:'var(--warn)',pillBg:'rgba(217,119,6,0.12)',pillColor:'var(--warn)',icon:'clock'}
+      :state==='err'?{bg:'var(--err)',pillBg:'rgba(192,21,42,0.12)',pillColor:'var(--err)',icon:'x'}
+      :{bg:'var(--t3)',pillBg:'var(--s1)',pillColor:'var(--t3)',icon:'minus'};
+    return `<div class="paso-row">
+      <div class="paso-icon" style="background:${cfg.bg}"><i data-lucide="${cfg.icon}" class="lc" style="color:#fff"></i></div>
+      <div class="paso-body">
+        <div><div class="paso-title">${title}</div><span class="paso-pill" style="background:${cfg.pillBg};color:${cfg.pillColor}">${pillText}</span></div>
+        ${rightText?`<div class="paso-right">${rightText}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  const resumenTab=`<div class="resumen-grid">
+    <div class="info-card">
+      <div class="info-card-h"><span><i data-lucide="user" class="lc"></i> Datos del cliente</span></div>
+      ${infoRow('user','Nombre completo',c.nombre)}
+      ${infoRow('mail','Correo electrónico',c.correo)}
+      ${infoRow('phone','Teléfono',c.telefono)}
+      ${infoRow('flag','País',c.pais)}
+      ${infoRow('calendar-days','Evento',c.evento)}
+      ${infoRow('message-circle','Contacto en WhatsApp',c.contactoWa)}
+      ${infoRow('monitor','Plataforma',c.acceso)}
     </div>
 
+    <div class="info-card">
+      <div class="info-card-h"><span><i data-lucide="shield-check" class="lc"></i> Accesos y membresías</span></div>
+      <div class="acc-card">
+        <div class="acc-card-h">
+          <div class="acc-card-h-l"><div class="acc-card-icon" style="background:#16a34a"><i data-lucide="crown" class="lc"></i></div><strong>Club Sinergético</strong></div>
+          ${clubActivo?`<span class="badge ba">Activo</span>`:`<span class="badge br">Inactivo</span>`}
+        </div>
+        <div class="acc-mini-grid">
+          <div class="acc-mini"><i data-lucide="calendar" class="lc"></i><div><div class="acc-mini-label">Fecha de inscripción</div><div class="acc-mini-value">${esc(c.inscripcion)||'—'}</div></div></div>
+          <div class="acc-mini"><i data-lucide="calendar" class="lc"></i><div><div class="acc-mini-label">Fecha de vencimiento</div><div class="acc-mini-value">${esc(finAccesoStr)||'—'}</div></div></div>
+          <div class="acc-mini"><i data-lucide="clock" class="lc"></i><div><div class="acc-mini-label">Días restantes</div><div class="acc-mini-value" style="color:${diasClub===null?'var(--t3)':diasClub<0?'var(--err)':diasClub<=15?'var(--warn)':'var(--ok)'}">${diasClub===null?'—':diasClub<0?'Vencido':diasClub+' días'}</div></div></div>
+          <div class="acc-mini"><i data-lucide="monitor" class="lc"></i><div><div class="acc-mini-label">Plataforma</div><div class="acc-mini-value">${esc(c.acceso)||'—'}</div></div></div>
+        </div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-card-h">
+          <div class="acc-card-h-l"><div class="acc-card-icon" style="background:#c0152a"><i data-lucide="graduation-cap" class="lc"></i></div><strong>Membresía Skool</strong></div>
+          ${tieneSkool?`<span class="badge bp">${esc((_skTipoRef||'').split('|')[0].trim())||'—'}</span>`:`<span class="sk-n">Sin registro</span>`}
+        </div>
+        <div class="acc-mini-grid">
+          <div class="acc-mini"><i data-lucide="mail" class="lc"></i><div><div class="acc-mini-label">Invitación</div><div class="acc-mini-value">${esc(c.memInvit)||'—'}</div></div></div>
+          <div class="acc-mini"><i data-lucide="calendar" class="lc"></i><div><div class="acc-mini-label">Fecha de vencimiento</div><div class="acc-mini-value">${esc(_skVenceRef)||'—'}</div></div></div>
+          <div class="acc-mini"><i data-lucide="clock" class="lc"></i><div><div class="acc-mini-label">Días restantes</div><div class="acc-mini-value" style="color:${_dlColor}">${_daysRef===null?'—':_daysRef<0?'Vencido':_daysRef+' días'}</div></div></div>
+          <div class="acc-mini"><i data-lucide="message-circle" class="lc"></i><div><div class="acc-mini-label">Contacto en WhatsApp</div><div class="acc-mini-value">${esc(c.contactoWa)||'—'}</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-h"><span><i data-lucide="list-checks" class="lc"></i> Estado y próximos pasos</span></div>
+      ${pasoRow(c.acceso==='No'||c.acceso==='Revocado'?'err':c.acceso?'ok':'idle','Acceso a la plataforma',esc(c.acceso)||'Sin registro')}
+      ${pasoRow(c.memInvit==='Si'||c.memInvit==='Invitacion enviada'?'ok':c.memInvit==='No'?'warn':'idle','Invitación Skool',esc(c.memInvit)||'Sin registro')}
+      ${pasoRow(c.llamada==='Si'?'ok':c.llamada==='Programada'?'warn':c.llamada?'err':'idle','Llamada de seguimiento',esc(c.llamada)||'Sin registro')}
+      ${pasoRow(clubActivo?'ok':'err','Renovación Club',clubActivo?'Al día':'Atención',diasClub===null?'':diasClub<0?'Vencido':'Vence en '+diasClub+' días')}
+      ${tieneSkool?pasoRow(skoolActivo?'ok':'err','Membresía Skool',skoolActivo?'Activa':'Vencida',_dl||''):''}
+    </div>
+  </div>
+
+  ${clubActivo&&(!tieneSkool||skoolActivo)?`<div class="client-banner" style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2)">
+    <div class="client-banner-icon" style="background:var(--ok)"><i data-lucide="shield-check" class="lc"></i></div>
+    <div><div class="client-banner-title">Cliente activo</div><div class="client-banner-sub">${tieneSkool?'Ambas membresías se encuentran activas.':'Su membresía del Club se encuentra activa.'}</div></div>
+  </div>`:`<div class="client-banner" style="background:rgba(192,21,42,.08);border:1px solid rgba(192,21,42,.2)">
+    <div class="client-banner-icon" style="background:var(--err)"><i data-lucide="alert-triangle" class="lc"></i></div>
+    <div><div class="client-banner-title">Revisar membresía</div><div class="client-banner-sub">${!clubActivo?'El acceso al Club está vencido o revocado.':'La membresía Skool necesita atención.'}</div></div>
+  </div>`}`;
+
+  const membresiasTab=`
     <div class="psec"><div class="pst">Contacto</div>
       <div class="pgrid">
         ${ef('nombre','Nombre',c.nombre)}
         ${ef('correo','Correo',c.correo)}
         <div class="ef pf">
           <label>Teléfono</label>
-          <span class="ev" style="display:flex;align-items:center;gap:6px">${esc(c.telefono||'—')}${c.telefono?`<button onclick="navigator.clipboard.writeText('${esc(c.telefono)}').then(function(){toast('✓ Teléfono copiado')})" style="background:var(--s2);border:1px solid var(--bdr2);color:var(--t3);padding:2px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:var(--font);flex-shrink:0" title="Copiar teléfono"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`:''}</span>
+          <span class="ev" style="display:flex;align-items:center;gap:6px">${esc(c.telefono||'—')}${copyBtn('telefono',c.telefono,'Teléfono')}</span>
           <input class="ei" type="text" data-field="telefono" value="${esc(c.telefono||'')}" placeholder="Teléfono">
         </div>
         ${ef('pais','País',c.pais)}
@@ -2738,51 +2909,93 @@ function det(i){
       </div>
     </div>
 
-    <div class="psec"><div class="pst">Seguimiento de llamada</div>
+    ${skBlock}
+    ${webinarBlock}
+  `;
+
+  const seguimientoTab=`<div class="psec"><div class="pst">Seguimiento de llamada</div>
       <div class="pgrid">
         ${efSelect('llamada','Llamada',c.llamada,['Si','No contestó','No','Programada','No aplica'])}
       </div>
       ${c.llamada?`<div style="margin-top:8px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;background:${c.llamada==='Si'?'rgba(22,163,74,0.1)':c.llamada.startsWith('No')?'rgba(192,21,42,0.1)':'rgba(217,119,6,0.1)'};color:${c.llamada==='Si'?'var(--ok)':c.llamada.startsWith('No')?'var(--err)':'var(--warn)'}">
         ${c.llamada==='Si'?'✓ Llamada realizada':c.llamada==='No contestó'?'✗ No contestó':c.llamada==='No'?'✗ No llamado':'⏳ '+c.llamada}
       </div>`:''}
-    </div>
+    </div>`;
 
-    ${skBlock}
-    ${webinarBlock}
-    ${isLector()?'':`
-    ${salesBlock}
-
+  const notasTab=`
     <div class="psec"><div class="pst">📝 Notas</div>
       <div class="ef">
         <span class="ev" style="font-size:13px;color:var(--t2);line-height:1.7;white-space:pre-wrap">${esc(c.notas)||'Sin notas'}</span>
         <textarea class="ei" data-field="notas" placeholder="Notas…" style="min-height:70px;resize:vertical">${esc(c.notas||'')}</textarea>
       </div>
     </div>
-
     <div class="psec"><div class="pst">🗒 Otras notas</div>
       <div class="ef">
         <span class="ev" style="font-size:13px;color:var(--t2);line-height:1.7;white-space:pre-wrap">${esc(c.ciudad)||'Sin otras notas'}</span>
         <textarea class="ei" data-field="ciudad" placeholder="Otras notas…" style="min-height:70px;resize:vertical">${esc(c.ciudad||'')}</textarea>
       </div>
     </div>
-
     <div class="psec"><div class="pst">🛠 Notas de soporte</div>
       <div class="ef">
         <span class="ev" style="font-size:13px;color:var(--t2);line-height:1.7;white-space:pre-wrap">${esc(c.soporte)||'Sin notas de soporte'}</span>
         <textarea class="ei" data-field="soporte" placeholder="Notas de soporte…" style="min-height:70px;resize:vertical">${esc(c.soporte||'')}</textarea>
       </div>
     </div>
+  `;
 
-    ${buildPhoneSourceNote(c)}
+  const actividadTab=buildPhoneSourceNote(c)||`<div style="color:var(--t3);font-size:13px;padding:6px 0">Sin actividad registrada</div>`;
 
-    <div class="save-row">
+  document.getElementById('dc').innerHTML=`
+    <div class="ch-top">
+      <div class="ch-id">
+        <div class="pav" style="background:${grad};color:#fff;border:none;width:56px;height:56px;border-radius:16px;font-size:20px">${ini}</div>
+        <div class="ch-id-text">
+          <div class="ch-name-row"><span class="ch-name">${esc(c.nombre)||'—'}</span>${statusBadge}</div>
+          <div class="ch-line"><i data-lucide="mail" class="lc"></i>${esc(c.correo)||'—'}${copyBtn('correo',c.correo,'Correo')}</div>
+          <div class="ch-line"><i data-lucide="phone" class="lc"></i>${esc(c.telefono)||'—'}${copyBtn('telefono',c.telefono,'Teléfono')}</div>
+        </div>
+      </div>
+      <div class="ch-right">
+        <div class="ch-meta"><i data-lucide="calendar" class="lc"></i><div>Cliente desde<strong>${esc(c.inscripcion)||'—'}</strong></div></div>
+        <div class="ch-actions">
+          ${waUrl?`<a class="ch-btn ch-btn-wa" href="${waUrl}" target="_blank" onclick="event.stopPropagation()"><i data-lucide="message-circle" class="lc"></i> WhatsApp</a>`:`<span class="ch-btn ch-btn-wa ch-btn-disabled"><i data-lucide="message-circle" class="lc"></i> WhatsApp</span>`}
+          ${rawTel?`<a class="ch-btn ch-btn-call" href="tel:${rawTel}"><i data-lucide="phone" class="lc"></i> Llamar</a>`:`<span class="ch-btn ch-btn-call ch-btn-disabled"><i data-lucide="phone" class="lc"></i> Llamar</span>`}
+          ${lector?'':`<button class="ch-btn ch-btn-edit" id="edit-toggle" onclick="toggleEditMode()"><i data-lucide="pencil" class="lc"></i> Editar</button>`}
+          <div class="ch-kebab-wrap">
+            <button class="ch-btn ch-btn-kebab" onclick="toggleClientKebab(event)">⋮</button>
+            <div class="ch-kebab-menu" id="client-kebab-menu">
+              <button onclick="copyCurrentContact();toggleClientKebab()"><i data-lucide="copy" class="lc"></i> Copiar datos</button>
+              <button onclick="cl('dp')"><i data-lucide="x" class="lc"></i> Cerrar ficha</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctabs">
+      <button class="ctab on" data-ctab="resumen" onclick="showClientTab('resumen')"><i data-lucide="user" class="lc"></i> Resumen</button>
+      <button class="ctab" data-ctab="membresias" onclick="showClientTab('membresias')"><i data-lucide="crown" class="lc"></i> Membresías</button>
+      ${lector?'':`<button class="ctab" data-ctab="ventas" onclick="showClientTab('ventas')"><i data-lucide="shopping-cart" class="lc"></i> Ventas</button>`}
+      ${lector?'':`<button class="ctab" data-ctab="notas" onclick="showClientTab('notas')"><i data-lucide="file-text" class="lc"></i> Notas</button>`}
+      <button class="ctab" data-ctab="seguimiento" onclick="showClientTab('seguimiento')"><i data-lucide="phone-call" class="lc"></i> Seguimiento</button>
+      <button class="ctab" data-ctab="actividad" onclick="showClientTab('actividad')"><i data-lucide="activity" class="lc"></i> Actividad</button>
+    </div>
+
+    <div class="ctab-panel on" data-ctab-panel="resumen">${resumenTab}</div>
+    <div class="ctab-panel" data-ctab-panel="membresias">${membresiasTab}</div>
+    ${lector?'':`<div class="ctab-panel" data-ctab-panel="ventas">${salesBlock}</div>`}
+    ${lector?'':`<div class="ctab-panel" data-ctab-panel="notas">${notasTab}</div>`}
+    <div class="ctab-panel" data-ctab-panel="seguimiento">${seguimientoTab}</div>
+    <div class="ctab-panel" data-ctab-panel="actividad">${actividadTab}</div>
+
+    ${lector?'':`<div class="save-row">
       <button class="saveb-edit" onclick="guardarCambios('${esc(c.correo)}')">💾 Guardar cambios en Sheets</button>
       <button class="cancelbtn" onclick="toggleEditMode()">Cancelar</button>
     </div>
-    ${!writerReady?`<div class="writer-warn" style="display:block">⚠ Configura WRITER_URL en el código para habilitar la escritura en Sheets</div>`:''}
-    `}
+    ${!writerReady?`<div class="writer-warn" style="display:block">⚠ Configura WRITER_URL en el código para habilitar la escritura en Sheets</div>`:''}`}
   `;
   document.getElementById('dp').classList.add('show');
+  lucide.createIcons({nodes:[document.getElementById('dc')]});
   // ── Marcar campos como "sucios" solo cuando el usuario los toca directamente ──
   // Esto evita que los auto-cálculos (finAcceso, memVence) se envíen a Sheets
   // si el usuario no los modificó manualmente.
