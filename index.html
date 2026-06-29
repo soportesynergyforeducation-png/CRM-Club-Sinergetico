@@ -2283,7 +2283,7 @@ async function loadWebinarMap(){
 // ── BOLETOS SYNERGY: inventario por evento + duración de membresía ──
 async function loadTicketsTable(){
   try{
-    var cached=localStorage.getItem('crm_tickets_cache');
+    var cached=localStorage.getItem('crm_tickets_cache_v2');
     var cachedTs=parseInt(localStorage.getItem('crm_tickets_cache_ts')||'0');
     var horas=(Date.now()-cachedTs)/3600000;
     if(cached&&horas<24){ ticketsByEvent=JSON.parse(cached); return; }
@@ -2304,10 +2304,10 @@ async function loadTicketsTable(){
       return -1;
     }
     var idx={
-      gral_mx_3:findCol('3m','gral','mx'), gral_mx_6:findCol('6m','gral','mx'), gral_mx_12:findCol('12m','gral','mx'),
-      vip_mx_3:findCol('3m','vip','mx'),   vip_mx_6:findCol('6m','vip','mx'),   vip_mx_12:findCol('12m','vip','mx'),
-      gral_us_3:findCol('3m','gral','us'), gral_us_6:findCol('6m','gral','us'), gral_us_12:findCol('12m','gral','us'),
-      vip_us_3:findCol('3m','vip','us'),   vip_us_6:findCol('6m','vip','us'),   vip_us_12:findCol('12m','vip','us')
+      gral_mx_3:findCol('3 mes','gral','mx'), gral_mx_6:findCol('6 mes','gral','mx'), gral_mx_12:findCol('12 mes','gral','mx'),
+      vip_mx_3:findCol('3 mes','vip','mx'),   vip_mx_6:findCol('6 mes','vip','mx'),   vip_mx_12:findCol('12 mes','vip','mx'),
+      gral_us_3:findCol('3 mes','gral','us'), gral_us_6:findCol('6 mes','gral','us'), gral_us_12:findCol('12 mes','gral','us'),
+      vip_us_3:findCol('3 mes','vip','us'),   vip_us_6:findCol('6 mes','vip','us'),   vip_us_12:findCol('12 mes','vip','us')
     };
     var blackIdx=-1;
     for(var bi=0;bi<headers.length;bi++){ if(headers[bi].includes('black')){ blackIdx=bi; break; } }
@@ -2321,7 +2321,7 @@ async function loadTicketsTable(){
     });
     ticketsByEvent=map;
     try{
-      localStorage.setItem('crm_tickets_cache', JSON.stringify(map));
+      localStorage.setItem('crm_tickets_cache_v2', JSON.stringify(map));
       localStorage.setItem('crm_tickets_cache_ts', Date.now().toString());
     }catch(e){}
   }catch(e){ console.warn('loadTicketsTable error:', e.message); }
