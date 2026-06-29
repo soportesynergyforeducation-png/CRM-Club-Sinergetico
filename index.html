@@ -1717,6 +1717,10 @@ function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 let all=[], filtered=[], skoolMap={}, salesMap={}, curF='all', notes={}, syncing=false;
 let lastKnownRowCount=0;
 var webinarMap={};
+// ── BOLETOS SYNERGY (inventario de boletos por evento/membresía) ──
+var TICKETS_SHEET_ID='1ZUXuxvt_FG6AIw9MW0wwv04w2Ixq_N4L3RchO1n28mo';
+var TICKETS_CUTOFF=new Date(2026,9,9); // 09-Oct-2026
+var ticketsByEvent={};
 const today=new Date(); today.setHours(0,0,0,0);
 
 // ── SCHEMAS: define columnas con aliases y fallback posicional ──
@@ -2276,6 +2280,71 @@ async function loadWebinarMap(){
   }catch(e){}
 }
 
+// ── BOLETOS SYNERGY: inventario por evento + duración de membresía ──
+async function loadTicketsTable(){
+  try{
+    var cached=localStorage.getItem('crm_tickets_cache');
+    var cachedTs=parseInt(localStorage.getItem('crm_tickets_cache_ts')||'0');
+    var horas=(Date.now()-cachedTs)/3600000;
+    if(cached&&horas<24){ ticketsByEvent=JSON.parse(cached); return; }
+  }catch(e){}
+  try{
+    var meta=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+TICKETS_SHEET_ID+'?key='+_activeKey+'&fields=sheets.properties');
+    var metaJ=await meta.json();
+    var sheets=metaJ.sheets||[];
+    var sheet0=sheets.find(function(s){return s.properties.sheetId===0;})||sheets[0];
+    if(!sheet0) return;
+    var rows=await fetchR(TICKETS_SHEET_ID,"'"+sheet0.properties.title+"'!A1:Z300");
+    if(!rows.length) return;
+    var headers=rows[0].map(function(h){return (h||'').toString().toLowerCase();});
+    function findCol(durTok,cat,country){
+      for(var i=0;i<headers.length;i++){
+        if(headers[i].includes(durTok)&&headers[i].includes(cat)&&headers[i].includes(country)) return i;
+      }
+      return -1;
+    }
+    var idx={
+      gral_mx_3:findCol('3m','gral','mx'), gral_mx_6:findCol('6m','gral','mx'), gral_mx_12:findCol('12m','gral','mx'),
+      vip_mx_3:findCol('3m','vip','mx'),   vip_mx_6:findCol('6m','vip','mx'),   vip_mx_12:findCol('12m','vip','mx'),
+      gral_us_3:findCol('3m','gral','us'), gral_us_6:findCol('6m','gral','us'), gral_us_12:findCol('12m','gral','us'),
+      vip_us_3:findCol('3m','vip','us'),   vip_us_6:findCol('6m','vip','us'),   vip_us_12:findCol('12m','vip','us')
+    };
+    var blackIdx=-1;
+    for(var bi=0;bi<headers.length;bi++){ if(headers[bi].includes('black')){ blackIdx=bi; break; } }
+    var map={};
+    rows.slice(1).forEach(function(r){
+      var evento=(r[0]||'').toString().trim();
+      if(!evento) return;
+      var cols={};
+      Object.keys(idx).forEach(function(k){ var ci=idx[k]; cols[k]=ci>=0?(r[ci]||'').toString().trim():''; });
+      map[evento.toLowerCase()]={evento:evento, cols:cols, black:blackIdx>=0?(r[blackIdx]||'').toString().trim():''};
+    });
+    ticketsByEvent=map;
+    try{
+      localStorage.setItem('crm_tickets_cache', JSON.stringify(map));
+      localStorage.setItem('crm_tickets_cache_ts', Date.now().toString());
+    }catch(e){}
+  }catch(e){ console.warn('loadTicketsTable error:', e.message); }
+}
+
+function getTicketInfo(c, finAccesoStr){
+  var dFin=parseDate(finAccesoStr);
+  if(!dFin||dFin<TICKETS_CUTOFF) return {active:false};
+  var row=ticketsByEvent[(c.evento||'').toString().trim().toLowerCase()];
+  if(!row) return {active:true, found:false};
+  var memRaw=(c.memTipo||c.skMem||'').toString().toLowerCase();
+  var dur=memRaw.includes('12')?'12':memRaw.includes('6')?'6':memRaw.includes('3')?'3':null;
+  var chips=[];
+  if(dur){
+    [['gral_mx','GRAL MX'],['vip_mx','VIP MX'],['gral_us','GRAL US'],['vip_us','VIP US']].forEach(function(p){
+      var v=row.cols[p[0]+'_'+dur];
+      if(v) chips.push({label:p[1], value:v});
+    });
+  }
+  if(row.black) chips.push({label:'BLACK', value:row.black});
+  return {active:true, found:true, dur:dur, chips:chips};
+}
+
 // ── SYNC SILENCIOSO ──
 async function doSyncSilent(){
   if(syncing) return;
@@ -2462,6 +2531,7 @@ async function doSync(){
     diagInfo.ts=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
     lastKnownRowCount=rows.length;
     setTimeout(function(){ loadWebinarMap(); }, 3000); // delay para no saturar quota
+    setTimeout(function(){ loadTicketsTable(); }, 4500);
 
     // ── Calcular salud del sync ──
     var missingTabs=[...Object.entries(diagInfo.sheet2Tabs),...Object.entries(diagInfo.sheet3Tabs)]
@@ -2826,6 +2896,24 @@ function det(i){
     </div>`;
   }
 
+  // ── Boletos Synergy (evento + duración de membresía) ──
+  const ticketInfo=getTicketInfo(c, finAccesoStr);
+  let ticketBlock='';
+  if(!ticketInfo.active){
+    ticketBlock=`<div class="client-banner" style="background:var(--s2);border:1px solid var(--bdr2);margin-top:10px">
+      <div class="client-banner-icon" style="background:var(--t3)"><i data-lucide="ticket" class="lc"></i></div>
+      <div><div class="client-banner-title">No activo para Synergy</div><div class="client-banner-sub">Su membresía no se mantiene activa hasta el 9 de octubre de 2026.</div></div>
+    </div>`;
+  } else if(ticketInfo.found){
+    const chipsHtml=(ticketInfo.chips&&ticketInfo.chips.length)
+      ?ticketInfo.chips.map(function(ch){return `<span class="badge bp" style="margin-right:6px;margin-bottom:6px;display:inline-block">${esc(ch.label)} · ${esc(ch.value)}</span>`;}).join('')
+      :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
+    ticketBlock=`<div class="info-card" style="margin-top:10px">
+      <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
+      <div>${chipsHtml}</div>
+    </div>`;
+  }
+
   const resumenTab=`<div class="resumen-grid">
     <div class="info-card">
       <div class="info-card-h"><span><i data-lucide="user" class="lc"></i> Datos del cliente</span></div>
@@ -2875,6 +2963,8 @@ function det(i){
       ${tieneSkool?pasoRow(skoolActivo?'ok':'err','Membresía Skool',skoolActivo?'Activa':'Vencida',_dl||''):''}
     </div>
   </div>
+
+  ${ticketBlock}
 
   ${clubActivo&&(!tieneSkool||skoolActivo)?`<div class="client-banner" style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2)">
     <div class="client-banner-icon" style="background:var(--ok)"><i data-lucide="shield-check" class="lc"></i></div>
