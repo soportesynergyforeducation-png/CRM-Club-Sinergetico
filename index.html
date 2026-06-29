@@ -2345,7 +2345,8 @@ function getTicketInfo(c, finAccesoStr){
   var row=ticketsByEvent[(c.evento||'').toString().trim().toLowerCase()];
   if(!row) return {active:true, found:false};
   var memRaw=(c.memTipo||c.skMem||'').toString().toLowerCase();
-  var dur=memRaw.includes('12')?'12':memRaw.includes('6')?'6':memRaw.includes('3')?'3':null;
+  // Sin membresía Skool registrada → usar duración de 3 Meses por defecto
+  var dur=memRaw.includes('12')?'12':memRaw.includes('6')?'6':memRaw.includes('3')?'3':'3';
   var chips=[];
   if(dur){
     [['gral_mx','GRAL MX'],['vip_mx','VIP MX'],['gral_us','GRAL US'],['vip_us','VIP US']].forEach(function(p){
