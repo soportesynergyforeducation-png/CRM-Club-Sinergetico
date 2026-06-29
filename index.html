@@ -2342,7 +2342,21 @@ async function loadTicketsTable(){
 function getTicketInfo(c, finAccesoStr){
   var dFin=parseDate(finAccesoStr);
   if(!dFin||dFin<TICKETS_CUTOFF) return {active:false};
-  var row=ticketsByEvent[(c.evento||'').toString().trim().toLowerCase()];
+  var eventoKey=(c.evento||'').toString().trim().toLowerCase();
+
+  // Caso especial "Renovación": el boleto depende del país del cliente, no de columnas por duración
+  if(eventoKey==='renovacion'||eventoKey==='renovación'){
+    var info=getCountryInfo(c.pais);
+    var k=(info&&info.label||c.pais||'').toLowerCase();
+    var isMx=k.indexOf('méxico')>=0||k.indexOf('mexico')>=0;
+    var isUsaCanada=k.indexOf('estados unidos')>=0||k.indexOf('canadá')>=0||k.indexOf('canada')>=0;
+    var chipsR=isMx?[{label:'GRAL MX',value:'2'}]
+      :isUsaCanada?[{label:'VIP MX',value:'2'},{label:'GRAL US',value:'2'}]
+      :[{label:'VIP MX',value:'2'}]; // resto de LATAM
+    return {active:true, found:true, dur:null, chips:chipsR};
+  }
+
+  var row=ticketsByEvent[eventoKey];
   if(!row) return {active:true, found:false};
   var memRaw=(c.memTipo||c.skMem||'').toString().toLowerCase();
   // Sin membresía Skool registrada → usar duración de 3 Meses por defecto
