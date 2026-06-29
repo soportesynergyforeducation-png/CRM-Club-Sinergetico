@@ -4078,7 +4078,7 @@ function initCharts(){
       var k=c.skMem.split('|')[0].trim();
       skMap[k]=(skMap[k]||0)+1;
     });
-    var EXCLUDE_MEM=['N/AM','KAJABI','HOTMART'];
+    var EXCLUDE_MEM=['N/AM','KAJABI','HOTMART','30 DIAS','30 días','30 dias'];
     var entries=Object.entries(skMap).filter(function(e){return EXCLUDE_MEM.indexOf(e[0].toUpperCase())===-1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
     if(!entries.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px;padding:8px 0">Sin datos</div>';return;}
     var maxVal=entries[0][1];
