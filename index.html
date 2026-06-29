@@ -2900,17 +2900,23 @@ function det(i){
 
   // ── Boletos Synergy (evento + duración de membresía) ──
   const ticketInfo=getTicketInfo(c, finAccesoStr);
+  function ticketChipStyle(label){
+    const l=label.toUpperCase();
+    if(l.indexOf('BLACK')>=0) return 'background:#000;color:#fff;border:1px solid #000';
+    if(l.indexOf('VIP')>=0) return 'background:rgba(217,164,6,0.16);color:#caa006;border:1px solid rgba(217,164,6,0.35)';
+    return 'background:rgba(192,21,42,0.12);color:var(--err);border:1px solid rgba(192,21,42,0.3)';
+  }
   let ticketBlock='';
   if(!ticketInfo.active){
-    ticketBlock=`<div class="client-banner" style="background:var(--s2);border:1px solid var(--bdr2);margin-top:10px">
+    ticketBlock=`<div class="client-banner" style="background:var(--s2);border:1px solid var(--bdr2)">
       <div class="client-banner-icon" style="background:var(--t3)"><i data-lucide="ticket" class="lc"></i></div>
       <div><div class="client-banner-title">No activo para Synergy</div><div class="client-banner-sub">Su membresía no se mantiene activa hasta el 9 de octubre de 2026.</div></div>
     </div>`;
   } else if(ticketInfo.found){
     const chipsHtml=(ticketInfo.chips&&ticketInfo.chips.length)
-      ?ticketInfo.chips.map(function(ch){return `<span class="badge bp" style="margin-right:6px;margin-bottom:6px;display:inline-block">${esc(ch.label)} · ${esc(ch.value)}</span>`;}).join('')
+      ?ticketInfo.chips.map(function(ch){return `<span class="badge" style="margin-right:6px;margin-bottom:6px;display:inline-block;font-weight:700;${ticketChipStyle(ch.label)}">${esc(ch.label)} · ${esc(ch.value)}</span>`;}).join('')
       :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
-    ticketBlock=`<div class="info-card" style="margin-top:10px">
+    ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
       <div>${chipsHtml}</div>
     </div>`;
@@ -2965,8 +2971,6 @@ function det(i){
       ${tieneSkool?pasoRow(skoolActivo?'ok':'err','Membresía Skool',skoolActivo?'Activa':'Vencida',_dl||''):''}
     </div>
   </div>
-
-  ${ticketBlock}
 
   ${clubActivo&&(!tieneSkool||skoolActivo)?`<div class="client-banner" style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2)">
     <div class="client-banner-icon" style="background:var(--ok)"><i data-lucide="shield-check" class="lc"></i></div>
@@ -3039,6 +3043,7 @@ function det(i){
   const actividadTab=buildPhoneSourceNote(c)||`<div style="color:var(--t3);font-size:13px;padding:6px 0">Sin actividad registrada</div>`;
 
   document.getElementById('dc').innerHTML=`
+    ${ticketBlock?`<div style="margin-bottom:14px">${ticketBlock}</div>`:''}
     <div class="ch-top">
       <div class="ch-id">
         <div class="pav" style="background:${grad};color:#fff;border:none;width:46px;height:46px;border-radius:14px;font-size:17px">${ini}</div>
