@@ -2732,13 +2732,13 @@ function render(data){
     // Acceso badge
     const ac=(c.acceso||'').toLowerCase();
     const acBadge=ac==='si'||ac==='sí'?`<span class="badge ba">Si</span>`:ac==='no'?`<span class="badge br">No</span>`:`<span class="sk-n">${esc(c.acceso)||'—'}</span>`;
-    // Mensaje de bienvenida (contacto en WhatsApp)
-    const wac=(c.contactoWa||'').toLowerCase();
-    const waBadge=wac.includes('msjs bienvenida')?`<span class="badge ba">${esc(c.contactoWa)}</span>`
-      :wac.includes('pendiente')?`<span class="badge bb">${esc(c.contactoWa)}</span>`
-      :wac.includes('#invalido')||wac.includes('#inválido')?`<span class="badge bo">${esc(c.contactoWa)}</span>`
+    // Mensaje de bienvenida (Notas de Soporte, col U)
+    const wac=(c.soporte||'').toLowerCase();
+    const waBadge=wac.includes('msjs bienvenida')?`<span class="badge ba">${esc(c.soporte)}</span>`
+      :wac.includes('pendiente')?`<span class="badge bb">${esc(c.soporte)}</span>`
+      :wac.includes('#invalido')||wac.includes('#inválido')?`<span class="badge bo">${esc(c.soporte)}</span>`
       :wac==='si'||wac==='sí'?`<span class="badge ba">Si</span>`:wac==='no'?`<span class="badge br">No</span>`
-      :`<span class="sk-n">${esc(c.contactoWa)||'—'}</span>`;
+      :`<span class="sk-n">${esc(c.soporte)||'—'}</span>`;
     // WhatsApp desde número de teléfono
     const rawTel=(c.telefono||'').replace(/\D/g,'');
     const waUrl=rawTel?`https://wa.me/${rawTel}`:'';
