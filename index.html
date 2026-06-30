@@ -1317,9 +1317,11 @@
       <label class="ag-lbl">NOMBRE</label>
       <input id="access-name-input" type="text" placeholder="Tu nombre" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('access-code-input').focus()">
       <label class="ag-lbl">CÓDIGO DE ACCESO</label>
-      <div style="position:relative">
-        <input id="access-code-input" type="password" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkAccessCode()" style="width:100%;padding-right:42px;box-sizing:border-box">
-        <button type="button" onclick="(function(){var i=document.getElementById('access-code-input');var b=document.getElementById('pwd-toggle');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈';})()" id="pwd-toggle" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1">👁️</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <input id="access-code-input" type="password" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkAccessCode()" style="margin-bottom:0;flex:1">
+        <button type="button" id="pwd-toggle" onclick="(function(){var i=document.getElementById('access-code-input');var on=i.type==='password';i.type=on?'text':'password';document.getElementById('pwd-icon').setAttribute('data-lucide',on?'eye-off':'eye');lucide.createIcons({nodes:[document.getElementById('pwd-icon')]})})()" style="flex-shrink:0;width:38px;height:38px;border-radius:10px;border:1px solid #243352;background:#0c1424;color:#7c8aa8;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <i id="pwd-icon" data-lucide="eye" style="width:16px;height:16px"></i>
+        </button>
       </div>
       <button class="ag-enter" onclick="checkAccessCode()">Entrar <span>→</span></button>
       <div id="access-gate-err" class="ag-err">Completa tu nombre y un código válido</div>
