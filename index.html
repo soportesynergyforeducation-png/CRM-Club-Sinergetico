@@ -696,15 +696,22 @@
   .paso-pill{display:inline-block;margin-top:3px;font-size:9px;font-weight:700;padding:1px 7px;border-radius:20px}
   .paso-right{font-size:10px;color:var(--t3);white-space:nowrap;flex-shrink:0}
 
-  .client-banner{display:flex;align-items:center;gap:10px;border-radius:12px;padding:9px 13px;margin-top:10px}
+  .client-banner{display:flex;align-items:stretch;border-radius:12px;margin-top:10px;overflow:hidden}
+  .client-banner-half{display:flex;align-items:center;gap:10px;padding:9px 13px;flex:1 1 50%;min-width:0}
   .client-banner-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .client-banner-icon .lc{width:14px;height:14px;color:#fff}
   .client-banner-title{font-size:12px;font-weight:700;color:var(--t1)}
   .client-banner-sub{font-size:11px;color:var(--t3);margin-top:1px}
+  .client-banner-notes{flex-direction:column;align-items:flex-start;gap:3px;border-left:1px solid rgba(255,255,255,.1)}
+  .client-banner-notes-label{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3)}
+  .client-banner-notes-label .lc{width:12px;height:12px}
+  .client-banner-notes-text{font-size:12px;color:var(--t2);line-height:1.4;white-space:pre-wrap;overflow-wrap:break-word}
 
   @media(max-width:768px){
     .resumen-grid{grid-template-columns:1fr}
     .acc-mini-grid{grid-template-columns:1fr 1fr}
+    .client-banner{flex-direction:column}
+    .client-banner-notes{border-left:none;border-top:1px solid rgba(255,255,255,.1)}
     .ch-top{flex-direction:column}
     .ch-actions{width:100%}
     .ch-btn{flex:1;justify-content:center}
@@ -2957,8 +2964,10 @@ function det(i){
   let ticketBlock='';
   if(!ticketInfo.active){
     ticketBlock=`<div class="client-banner" style="background:var(--s2);border:1px solid var(--bdr2)">
-      <div class="client-banner-icon" style="background:var(--t3)"><i data-lucide="ticket" class="lc"></i></div>
-      <div><div class="client-banner-title">No activo para Synergy</div><div class="client-banner-sub">Su membresía no se mantiene activa hasta el 9 de octubre de 2026.</div></div>
+      <div class="client-banner-half">
+        <div class="client-banner-icon" style="background:var(--t3)"><i data-lucide="ticket" class="lc"></i></div>
+        <div><div class="client-banner-title">No activo para Synergy</div><div class="client-banner-sub">Su membresía no se mantiene activa hasta el 9 de octubre de 2026.</div></div>
+      </div>
     </div>`;
   } else if(ticketInfo.found){
     const chipsHtml=(ticketInfo.chips&&ticketInfo.chips.length)
@@ -3033,11 +3042,23 @@ function det(i){
   </div>
 
   ${clubActivo&&(!tieneSkool||skoolActivo)?`<div class="client-banner" style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2)">
-    <div class="client-banner-icon" style="background:var(--ok)"><i data-lucide="shield-check" class="lc"></i></div>
-    <div><div class="client-banner-title">Cliente activo</div><div class="client-banner-sub">${tieneSkool?'Ambas membresías se encuentran activas.':'Su membresía del Club se encuentra activa.'}</div></div>
+    <div class="client-banner-half">
+      <div class="client-banner-icon" style="background:var(--ok)"><i data-lucide="shield-check" class="lc"></i></div>
+      <div><div class="client-banner-title">Cliente activo</div><div class="client-banner-sub">${tieneSkool?'Ambas membresías se encuentran activas.':'Su membresía del Club se encuentra activa.'}</div></div>
+    </div>
+    <div class="client-banner-half client-banner-notes">
+      <div class="client-banner-notes-label"><i data-lucide="message-square-text" class="lc"></i> Notas de soporte</div>
+      <div class="client-banner-notes-text">${esc(c.soporte)||'Sin notas de soporte'}</div>
+    </div>
   </div>`:`<div class="client-banner" style="background:rgba(192,21,42,.08);border:1px solid rgba(192,21,42,.2)">
-    <div class="client-banner-icon" style="background:var(--err)"><i data-lucide="alert-triangle" class="lc"></i></div>
-    <div><div class="client-banner-title">Revisar membresía</div><div class="client-banner-sub">${!clubActivo?'El acceso al Club está vencido o revocado.':'La membresía Skool necesita atención.'}</div></div>
+    <div class="client-banner-half">
+      <div class="client-banner-icon" style="background:var(--err)"><i data-lucide="alert-triangle" class="lc"></i></div>
+      <div><div class="client-banner-title">Revisar membresía</div><div class="client-banner-sub">${!clubActivo?'El acceso al Club está vencido o revocado.':'La membresía Skool necesita atención.'}</div></div>
+    </div>
+    <div class="client-banner-half client-banner-notes">
+      <div class="client-banner-notes-label"><i data-lucide="message-square-text" class="lc"></i> Notas de soporte</div>
+      <div class="client-banner-notes-text">${esc(c.soporte)||'Sin notas de soporte'}</div>
+    </div>
   </div>`}`;
 
   const membresiasTab=`
