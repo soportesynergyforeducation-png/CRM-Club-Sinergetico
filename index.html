@@ -525,7 +525,7 @@
   .tw{background:var(--glass-tw);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow-md)}
   .th-row{
     display:grid;
-    grid-template-columns:32px 1.3fr 1.5fr .9fr .75fr .85fr .75fr 1.1fr 80px;
+    grid-template-columns:32px 1.3fr 1.5fr .9fr .75fr .85fr .85fr .75fr 1.1fr 80px;
     padding:10px 18px;border-bottom:2px solid var(--bdr);
     background:var(--s2);
   }
@@ -536,7 +536,7 @@
   }
   .tr{
     display:grid;
-    grid-template-columns:32px 1.3fr 1.5fr .9fr .75fr .85fr .75fr 1.1fr 80px;
+    grid-template-columns:32px 1.3fr 1.5fr .9fr .75fr .85fr .85fr .75fr 1.1fr 80px;
     padding:11px 18px;border-bottom:1px solid var(--bdr);
     cursor:pointer;transition:background .12s;align-items:center;
     background:transparent;
@@ -1067,6 +1067,7 @@
     .td[data-col="sta"]   {grid-area:sta;justify-self:end;align-self:center}
     .td[data-col="mem"]   {grid-area:mem;justify-self:end}
     .td[data-col="vence"] {display:none!important}
+    .td[data-col="waMsj"] {display:none!important}
     .td[data-col="acc"]   {grid-area:acc;justify-self:end;align-self:center}
 
     .av{width:42px!important;height:42px!important;border-radius:12px!important}
@@ -1562,6 +1563,7 @@
           <div class="th-row">
             <div class="th"></div><div class="th">Nombre</div><div class="th">Correo</div>
             <div class="th">Teléfono</div><div class="th">Evento</div><div class="th">Acceso</div>
+            <div class="th">Msj. Bienvenida</div>
             <div class="th">Membresía</div><div class="th">Vence Skool</div><div class="th">Acc.</div>
           </div>
           <div class="tbody" id="tb"><div class="loader"><div class="ldot"></div>Conectando con Google Sheets…</div></div>
@@ -2728,6 +2730,9 @@ function render(data){
     // Acceso badge
     const ac=(c.acceso||'').toLowerCase();
     const acBadge=ac==='si'||ac==='sí'?`<span class="badge ba">Si</span>`:ac==='no'?`<span class="badge br">No</span>`:`<span class="sk-n">${esc(c.acceso)||'—'}</span>`;
+    // Mensaje de bienvenida (contacto en WhatsApp)
+    const wac=(c.contactoWa||'').toLowerCase();
+    const waBadge=wac==='si'||wac==='sí'?`<span class="badge ba">Si</span>`:wac==='no'?`<span class="badge br">No</span>`:`<span class="sk-n">${esc(c.contactoWa)||'—'}</span>`;
     // WhatsApp desde número de teléfono
     const rawTel=(c.telefono||'').replace(/\D/g,'');
     const waUrl=rawTel?`https://wa.me/${rawTel}`:'';
@@ -2738,6 +2743,7 @@ function render(data){
       <div class="td" data-col="tel">${esc(c.telefono)||'—'}</div>
       <div class="td" data-col="ev">${esc(c.evento)||'—'}</div>
       <div class="td" data-col="sta">${acBadge}</div>
+      <div class="td" data-col="waMsj">${waBadge}</div>
       <div class="td" data-col="mem">${ml}</div>
       <div class="td" data-col="vence">${vb}</div>
       <div class="td" data-col="acc"><div class="acts">
