@@ -551,6 +551,8 @@
   .ba{background:rgba(22,163,74,0.08);color:#16a34a;border:1px solid rgba(22,163,74,0.2);font-weight:600}
   .br{background:rgba(192,21,42,0.08);color:#c0152a;border:1px solid rgba(192,21,42,0.2);font-weight:600}
   .bp{background:rgba(240,168,90,0.1);color:#f0a85a;border:1px solid rgba(240,168,90,0.2)}
+  .bb{background:rgba(56,132,255,0.1);color:#3884ff;border:1px solid rgba(56,132,255,0.2);font-weight:600}
+  .bo{background:rgba(249,115,22,0.1);color:#f97316;border:1px solid rgba(249,115,22,0.2);font-weight:600}
   .sk-ok{background:rgba(62,207,142,0.08);color:#3ecf8e;border:1px solid rgba(62,207,142,0.18);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
   .sk-w{background:rgba(240,168,90,0.1);color:#f0a85a;border:1px solid rgba(240,168,90,0.2);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
   .sk-e{background:rgba(249,112,102,0.1);color:#f97066;border:1px solid rgba(249,112,102,0.2);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
@@ -2732,7 +2734,11 @@ function render(data){
     const acBadge=ac==='si'||ac==='sí'?`<span class="badge ba">Si</span>`:ac==='no'?`<span class="badge br">No</span>`:`<span class="sk-n">${esc(c.acceso)||'—'}</span>`;
     // Mensaje de bienvenida (contacto en WhatsApp)
     const wac=(c.contactoWa||'').toLowerCase();
-    const waBadge=wac==='si'||wac==='sí'?`<span class="badge ba">Si</span>`:wac==='no'?`<span class="badge br">No</span>`:`<span class="sk-n">${esc(c.contactoWa)||'—'}</span>`;
+    const waBadge=wac.includes('msjs bienvenida')?`<span class="badge ba">${esc(c.contactoWa)}</span>`
+      :wac.includes('pendiente')?`<span class="badge bb">${esc(c.contactoWa)}</span>`
+      :wac.includes('#invalido')||wac.includes('#inválido')?`<span class="badge bo">${esc(c.contactoWa)}</span>`
+      :wac==='si'||wac==='sí'?`<span class="badge ba">Si</span>`:wac==='no'?`<span class="badge br">No</span>`
+      :`<span class="sk-n">${esc(c.contactoWa)||'—'}</span>`;
     // WhatsApp desde número de teléfono
     const rawTel=(c.telefono||'').replace(/\D/g,'');
     const waUrl=rawTel?`https://wa.me/${rawTel}`:'';
