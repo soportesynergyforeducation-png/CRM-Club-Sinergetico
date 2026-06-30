@@ -542,6 +542,8 @@
     background:transparent;
   }
   .tr:hover{background:rgba(192,21,42,0.05)}
+  .tr-equipo{background:rgba(56,132,255,0.04);box-shadow:inset 3px 0 0 #3884ff}
+  .tr-equipo:hover{background:rgba(56,132,255,0.09)}
   .tr:last-child{border-bottom:none}
   .td{font-size:13px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px}
   .tdn{color:var(--t1);font-weight:500}
@@ -2759,7 +2761,8 @@ function render(data){
     // WhatsApp desde número de teléfono
     const rawTel=(c.telefono||'').replace(/\D/g,'');
     const waUrl=rawTel?`https://wa.me/${rawTel}`:'';
-    return `<div class="tr" onclick="det(${i})">
+    const esEquipo=(c.evento||'').toLowerCase().includes('equipo sinerg');
+    return `<div class="tr${esEquipo?' tr-equipo':''}" onclick="det(${i})">
       <div class="td" data-col="av"><div class="av"><i data-lucide="user" class="lc"></i></div></div>
       <div class="td tdn" data-col="nom" title="${esc(c.nombre)}">${esc(c.nombre)||'—'}</div>
       <div class="td" data-col="cor" title="${esc(c.correo)}">${esc(c.correo)||'—'}</div>
