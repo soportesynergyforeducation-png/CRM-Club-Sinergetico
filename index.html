@@ -1793,9 +1793,19 @@ function buildColMap(headerRow, schema){
   var map={}, warn=[], found=[];
   for(var field in schema){
     var def=schema[field], idx=-1;
+    // 1) match exacto contra los alias
     for(var ai=0;ai<def.a.length;ai++){
       var fi=h.indexOf(def.a[ai].toLowerCase());
       if(fi!==-1){idx=fi;break;}
+    }
+    // 2) si no hubo match exacto, probar coincidencia parcial (header contiene el alias)
+    if(idx===-1){
+      for(var aj=0;aj<def.a.length&&idx===-1;aj++){
+        var alias=def.a[aj].toLowerCase();
+        for(var hi=0;hi<h.length;hi++){
+          if(h[hi]&&h[hi].indexOf(alias)!==-1){idx=hi;break;}
+        }
+      }
     }
     if(idx!==-1){
       map[field]=idx;
