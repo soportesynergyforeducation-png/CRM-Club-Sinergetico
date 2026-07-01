@@ -1764,13 +1764,13 @@ var SCHEMA_CRM={
   acceso:     {a:['acceso','plataforma'],                                         f:8,  req:false},
   contactoWa: {a:['contacto en whats','contacto whats','contacto wa','contactowa'], f:9,  req:false},
   llamada:    {a:['llamada'],                                                     f:10, req:false},
-  notas:      {a:['notas','nota','notes'],                                        f:11, req:false},
+  notas:      {a:['notas generales','notas','nota','notes'],                      f:11, req:false},
   ciudad:     {a:['ciudad','otras notas','city'],                                 f:12, req:false},
   renovar:    {a:['renovar','renovación','renovacion'],                           f:13, req:false},
   telegram:   {a:['telegram'],                                                    f:14, req:false},
   happiness:  {a:['happiness','felicidad'],                                       f:15, req:false},
   encuesta:   {a:['encuesta'],                                                    f:16, req:false},
-  soporte:    {a:['soporte','notas soporte','notas de soporte'],                  f:17, req:false},
+  soporte:    {a:['notas de soporte','notas soporte','soporte'],                  f:17, req:false},
   telCorr:    {a:['tel corr','teléfono corregido','telefono corregido'],          f:18, req:false},
   wa:         {a:['wa','whatsapp','link wa','link whatsapp'],                     f:19, req:false},
   apertura:   {a:['apertura'],                                                    f:20, req:false},
@@ -1812,10 +1812,12 @@ function buildColMap(headerRow, schema){
       var fi=h.indexOf(def.a[ai].toLowerCase());
       if(fi!==-1){idx=fi;break;}
     }
-    // 2) si no hubo match exacto, probar coincidencia parcial (header contiene el alias)
+    // 2) si no hubo match exacto, probar coincidencia parcial ordenando alias de mayor a menor longitud
+    // para que alias específicos (ej. "notas de soporte") ganen sobre genéricos (ej. "notas")
     if(idx===-1){
-      for(var aj=0;aj<def.a.length&&idx===-1;aj++){
-        var alias=def.a[aj].toLowerCase();
+      var sortedAliases=def.a.slice().sort(function(a,b){return b.length-a.length;});
+      for(var aj=0;aj<sortedAliases.length&&idx===-1;aj++){
+        var alias=sortedAliases[aj].toLowerCase();
         for(var hi=0;hi<h.length;hi++){
           if(h[hi]&&h[hi].indexOf(alias)!==-1){idx=hi;break;}
         }
@@ -3962,6 +3964,17 @@ function openDiag(){
       html+='<div style="font-size:12px;color:'+color+';padding:3px 0 3px 12px">'+icon+' <strong>'+w.field+'</strong> — no encontrado, usando col '+col+' (índice '+w.col+'). Nombres esperados: '+w.aliases.slice(0,3).join(', ')+'</div>';
     });
     html+='<div style="margin-bottom:14px"></div>';
+  }
+
+  // ── Columnas encontradas por nombre ──
+  if(d.sheet1.found&&d.sheet1.found.length){
+    html+='<details style="margin-bottom:14px"><summary style="font-size:12px;color:var(--t3);cursor:pointer;user-select:none">Ver columnas detectadas por nombre ('+d.sheet1.found.length+')</summary>';
+    html+='<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:3px">';
+    d.sheet1.found.forEach(function(f){
+      var col=String.fromCharCode(65+f.col);
+      html+='<div style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--s2)"><span style="color:var(--t3)">'+col+'</span> <strong style="color:var(--t2)">'+f.field+'</strong> <span style="color:var(--t3)">← "'+esc(f.header)+'"</span></div>';
+    });
+    html+='</div></details>';
   }
 
   // ── Sheet 2: Skool ──
