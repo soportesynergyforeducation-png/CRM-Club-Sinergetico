@@ -3294,6 +3294,14 @@ async function guardarCambios(correo){
     // no-cors no devuelve respuesta legible, asumimos éxito si no hay excepción
     const c=filtered.find(x=>x.correo===correo);
     if(c) Object.keys(campos).forEach(function(k){c[k]=campos[k];});
+    // Actualizar los spans de display en el panel para reflejar los nuevos valores sin reabrir
+    panel.querySelectorAll('.ei').forEach(function(el){
+      const field=el.getAttribute('data-field');
+      if(field&&campos[field]!==undefined){
+        const evSpan=el.closest('.ef')||el.closest('.pf');
+        if(evSpan){const sp=evSpan.querySelector('.ev');if(sp) sp.textContent=campos[field]||'—';}
+      }
+    });
     toggleEditMode();
     toast('✓ Cambios enviados a Sheets');
     notificarCambio(correo);
