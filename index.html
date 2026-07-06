@@ -646,6 +646,8 @@
   .ch-btn .lc{width:14px;height:14px}
   .ch-btn-wa{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#1ea854}
   .ch-btn-call{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.3);color:#3b82f6}
+  .ch-btn-legendaria{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.3);color:#8b5cf6}
+  .ch-btn-legendaria:hover{background:rgba(139,92,246,.22)}
   .ch-btn-edit.active{background:var(--acc);border-color:var(--acc);color:#fff}
   .ch-btn-disabled{opacity:.4;pointer-events:none}
   .ch-kebab-wrap{position:relative}
@@ -3150,6 +3152,7 @@ function det(i){
           ${waUrl?`<a class="ch-btn ch-btn-wa" href="${waUrl}" target="_blank" onclick="event.stopPropagation()"><i data-lucide="message-circle" class="lc"></i> WhatsApp</a>`:`<span class="ch-btn ch-btn-wa ch-btn-disabled"><i data-lucide="message-circle" class="lc"></i> WhatsApp</span>`}
           ${rawTel?`<a class="ch-btn ch-btn-call" href="tel:${rawTel}"><i data-lucide="phone" class="lc"></i> Llamar</a>`:`<span class="ch-btn ch-btn-call ch-btn-disabled"><i data-lucide="phone" class="lc"></i> Llamar</span>`}
           ${lector?'':`<button class="ch-btn ch-btn-edit" id="edit-toggle" onclick="toggleEditMode()"><i data-lucide="pencil" class="lc"></i> Editar</button>`}
+          <span id="legendaria-slot"></span>
           <div class="ch-kebab-wrap">
             <button class="ch-btn ch-btn-kebab" onclick="toggleClientKebab(event)">⋮</button>
             <div class="ch-kebab-menu" id="client-kebab-menu">
@@ -3185,6 +3188,24 @@ function det(i){
   `;
   document.getElementById('dp').classList.add('show');
   lucide.createIcons({nodes:[document.getElementById('dc')]});
+  // ── Verificar existencia en CRM Legendar-IA (server-side, key nunca expuesta) ──
+  (function(correoCheck){
+    fetch('/api/legendaria-existe?correo='+encodeURIComponent(correoCheck))
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(data){
+        if(!data||!data.existe) return;
+        const slot=document.getElementById('legendaria-slot');
+        if(!slot) return;
+        const a=document.createElement('a');
+        a.className='ch-btn ch-btn-legendaria';
+        a.href='https://crm-legendar-ia.vercel.app/ir/'+encodeURIComponent(correoCheck);
+        a.target='_blank';
+        a.rel='noopener noreferrer';
+        a.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Legendar-IA';
+        slot.appendChild(a);
+      })
+      .catch(function(){/* silencioso si falla */});
+  })(c.correo||'');
   // ── Marcar campos como "sucios" solo cuando el usuario los toca directamente ──
   // Esto evita que los auto-cálculos (finAcceso, memVence) se envíen a Sheets
   // si el usuario no los modificó manualmente.
