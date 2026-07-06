@@ -2980,6 +2980,7 @@ function det(i){
         <div class="client-banner-icon" style="background:var(--t3)"><i data-lucide="ticket" class="lc"></i></div>
         <div><div class="client-banner-title">No activo para Synergy</div><div class="client-banner-sub">Su membresía no se mantiene activa hasta el 9 de octubre de 2026.</div></div>
       </div>
+      <div class="legendaria-chips-slot"></div>
     </div>`;
   } else if(ticketInfo.found){
     const chipsHtml=(ticketInfo.chips&&ticketInfo.chips.length)
@@ -2987,12 +2988,13 @@ function det(i){
       :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
     ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
-      <div>${chipsHtml}</div>
+      <div>${chipsHtml}<div class="legendaria-chips-slot"></div></div>
     </div>`;
   } else {
     ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy</span></div>
       <span class="sk-n">${Object.keys(ticketsByEvent).length?'Sin información de boletos para "'+esc(c.evento||'este evento')+'"':'Cargando boletos…'}</span>
+      <div class="legendaria-chips-slot"></div>
     </div>`;
   }
   // Si aún no se ha cargado el inventario de boletos, cargarlo y refrescar esta ficha
@@ -3194,10 +3196,27 @@ function det(i){
       .then(function(r){return r.ok?r.json():null;})
       .then(function(data){
         if(!data||!data.existe) return;
+        // Botón de enlace
         const slot=document.getElementById('legendaria-slot');
-        if(!slot||slot.dataset.correo===correoCheck) return;
-        slot.dataset.correo=correoCheck;
-        slot.innerHTML='<a class="ch-btn ch-btn-legendaria" href="https://crm-legendar-ia.vercel.app/ir/'+encodeURIComponent(correoCheck)+'" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Legendar-IA</a>';
+        if(slot&&slot.dataset.correo!==correoCheck){
+          slot.dataset.correo=correoCheck;
+          slot.innerHTML='<a class="ch-btn ch-btn-legendaria" href="https://crm-legendar-ia.vercel.app/ir/'+encodeURIComponent(correoCheck)+'" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Legendar-IA</a>';
+        }
+        // Chips de beneficios en el bloque de boletos
+        var beneficios=data.beneficios||[];
+        if(!beneficios.length) return;
+        var chipsHtml=beneficios.map(function(b){
+          var tipoUp=(b.tipo||'').toUpperCase();
+          var reg=(data.region||'MX').toUpperCase();
+          var label=(tipoUp==='VIP'?'VIP':'GRAL')+' '+reg;
+          var style=tipoUp==='VIP'
+            ?'background:rgba(217,164,6,0.16);color:#caa006;border:1px solid rgba(217,164,6,0.35)'
+            :'background:rgba(192,21,42,0.12);color:var(--err);border:1px solid rgba(192,21,42,0.3)';
+          return '<span class="badge" title="'+esc(b.evento)+'" style="margin-right:6px;margin-bottom:6px;display:inline-block;font-weight:700;'+style+'">'+esc(label)+' · '+esc(String(b.cantidad))+' <span style="font-weight:400;opacity:.7;font-size:10px">(Legendar-IA)</span></span>';
+        }).join('');
+        document.querySelectorAll('.legendaria-chips-slot').forEach(function(el){
+          el.innerHTML=chipsHtml;
+        });
       })
       .catch(function(){/* silencioso si falla */});
   })(c.correo||'');
