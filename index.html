@@ -2975,7 +2975,7 @@ function det(i){
   }
   let ticketBlock='';
   if(!ticketInfo.active){
-    ticketBlock=`<div class="client-banner" style="background:var(--s2);border:1px solid var(--bdr2)">
+    ticketBlock=`<div class="client-banner ticket-inactive-banner" style="background:var(--s2);border:1px solid var(--bdr2)">
       <div class="client-banner-half">
         <div class="client-banner-icon" style="background:var(--t3)"><i data-lucide="ticket" class="lc"></i></div>
         <div><div class="client-banner-title">No activo para Synergy</div><div class="client-banner-sub">Su membresía no se mantiene activa hasta el 9 de octubre de 2026.</div></div>
@@ -3216,6 +3216,14 @@ function det(i){
         }).join('');
         document.querySelectorAll('.legendaria-chips-slot').forEach(function(el){
           el.innerHTML=chipsHtml;
+        });
+        // Si el banner decía "No activo", convertirlo en "Activo por Legendar-IA"
+        document.querySelectorAll('.ticket-inactive-banner').forEach(function(banner){
+          banner.style.background='rgba(139,92,246,.08)';
+          banner.style.border='1px solid rgba(139,92,246,.3)';
+          var half=banner.querySelector('.client-banner-half');
+          if(half) half.innerHTML='<div class="client-banner-icon" style="background:#8b5cf6"><i data-lucide="ticket" class="lc"></i></div><div><div class="client-banner-title">Activo por Legendar-IA</div><div class="client-banner-sub">Sus boletos provienen de su membresía en Legendar-IA.</div></div>';
+          lucide.createIcons({nodes:[banner]});
         });
       })
       .catch(function(){/* silencioso si falla */});
