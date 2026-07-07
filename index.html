@@ -3207,8 +3207,8 @@ function det(i){
         if(!beneficios.length) return;
         var chipsHtml=beneficios.map(function(b){
           var tipoUp=(b.tipo||'').toUpperCase();
-          var reg=(data.region||'MX').toUpperCase();
-          var label=(tipoUp==='VIP'?'VIP':'GRAL')+' '+reg;
+          var evReg=(b.evento||'').toUpperCase().indexOf(' US')>=0?'US':'MX';
+          var label=(tipoUp==='VIP'?'VIP':'GRAL')+' '+evReg;
           var style=tipoUp==='VIP'
             ?'background:rgba(217,164,6,0.16);color:#caa006;border:1px solid rgba(217,164,6,0.35)'
             :'background:rgba(192,21,42,0.12);color:var(--err);border:1px solid rgba(192,21,42,0.3)';
