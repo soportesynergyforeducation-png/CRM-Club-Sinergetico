@@ -603,6 +603,7 @@
   }
   .pc:hover{color:var(--t1);background:var(--s3);border-color:var(--bdr2)}
   #dc .pc{top:16px;right:16px}
+  .ch-close-mob{display:none;width:100%;align-items:center;justify-content:center;gap:6px;padding:10px;margin-bottom:4px;border-radius:10px;border:1px solid var(--bdr2);background:var(--s2);color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
   .ph{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-right:50px}
   .pav{
     width:50px;height:50px;border-radius:14px;
@@ -725,6 +726,7 @@
     .ch-top{flex-direction:column}
     .ch-actions{width:100%}
     .ch-btn{flex:1;justify-content:center}
+    .ch-close-mob{display:flex!important}
     .ch-kebab-wrap .ch-btn{flex:none}
   }
 
@@ -3186,6 +3188,7 @@ function det(i){
   const actividadTab=buildPhoneSourceNote(c)||`<div style="color:var(--t3);font-size:13px;padding:6px 0">Sin actividad registrada</div>`;
 
   document.getElementById('dc').innerHTML=`
+    <button type="button" class="ch-close-mob" onclick="cl('dp')"><i data-lucide="x" class="lc"></i> Cerrar perfil</button>
     <div class="ch-top">
       ${ticketBlock?`<div class="ch-ticket-mob">${ticketBlock}</div>`:''}
       <div class="ch-id">
