@@ -1705,9 +1705,18 @@ async function toggleBoletoEnv(correo, btn){
   // Actualizar fila del paso en el panel si está abierto
   var pasoBoletosEl=document.getElementById('paso-boletos');
   if(pasoBoletosEl){
-    pasoBoletosEl.querySelector('.paso-dot').className='paso-dot paso-dot-'+(nuevoVal?'ok':'idle');
-    pasoBoletosEl.querySelector('.paso-right').textContent=nuevoVal?'Enviados':'Pendiente';
-    pasoBoletosEl.dataset.val=nuevoVal?'Si':'';
+    var icon=pasoBoletosEl.querySelector('.paso-icon');
+    var pill=pasoBoletosEl.querySelector('.paso-pill');
+    if(icon){
+      icon.style.background=nuevoVal?'var(--ok)':'var(--t3)';
+      var lc=icon.querySelector('.lc');
+      if(lc){lc.setAttribute('data-lucide',nuevoVal?'check':'minus');lucide.createIcons({nodes:[icon]});}
+    }
+    if(pill){
+      pill.textContent=nuevoVal?'Enviados':'Pendiente';
+      pill.style.background=nuevoVal?'rgba(22,163,74,0.12)':'var(--s1)';
+      pill.style.color=nuevoVal?'var(--ok)':'var(--t3)';
+    }
   }
   try{
     await crmDB.collection('boletos_env').doc(docId).set({enviado:nuevoVal, correo:correo, ts:Date.now()});
@@ -3090,10 +3099,8 @@ function det(i){
       <div class="info-card-h"><span><i data-lucide="list-checks" class="lc"></i> Estado y próximos pasos</span></div>
       ${pasoRow(c.acceso==='No'||c.acceso==='Revocado'?'err':c.acceso?'ok':'idle','Acceso a la plataforma',esc(c.acceso)||'Sin registro')}
       ${pasoRow(c.memInvit==='Si'||c.memInvit==='Invitacion enviada'?'ok':c.memInvit==='No'?'warn':'idle','Invitación Skool',esc(c.memInvit)||'Sin registro')}
-      <div class="paso" id="paso-boletos" style="cursor:pointer" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" data-val="${boletosEnvMap[c.correo]?'Si':''}">
-        <div class="paso-dot paso-dot-${boletosEnvMap[c.correo]?'ok':'idle'}"></div>
-        <div class="paso-label">Boletos Synergy Unlimited 26</div>
-        <div class="paso-right">${boletosEnvMap[c.correo]?'Enviados':'Pendiente'}</div>
+      <div id="paso-boletos" style="cursor:pointer" onclick="toggleBoletoEnv('${esc(c.correo)}',null)">
+        ${pasoRow(boletosEnvMap[c.correo]?'ok':'idle','Boletos Synergy Unlimited 26',boletosEnvMap[c.correo]?'Enviados':'Pendiente')}
       </div>
       ${pasoRow(c.llamada==='Si'?'ok':c.llamada==='Programada'?'warn':c.llamada?'err':'idle','Llamada de seguimiento',esc(c.llamada)||'Sin registro')}
       ${pasoRow(clubActivo?'ok':'err','Renovación Club',clubActivo?'Al día':'Atención',diasClub===null?'':diasClub<0?'Vencido':'Vence en '+diasClub+' días')}
