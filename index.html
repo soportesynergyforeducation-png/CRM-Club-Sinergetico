@@ -1700,17 +1700,17 @@ async function toggleBoletoEnv(correo, btn){
   var nuevoVal=!boletosEnvMap[correo];
   boletosEnvMap[correo]=nuevoVal;
   // Actualizar UI inmediatamente
-  document.querySelectorAll('.ab-check[data-correo="'+CSS.escape(correo)+'"]').forEach(function(b){
+  document.querySelectorAll('.ab-check').forEach(function(b){if(b.dataset.correo!==correo) return;
     b.classList.toggle('checked', nuevoVal);
   });
   // Actualizar fila del paso en el panel si está abierto
-  var pasoBoletosEl=document.getElementById('paso-boletos');
-  if(pasoBoletosEl){
-    pasoBoletosEl.style.borderColor=nuevoVal?'rgba(22,163,74,.4)':'var(--bdr2)';
-    pasoBoletosEl.style.background=nuevoVal?'rgba(22,163,74,.1)':'transparent';
-    pasoBoletosEl.style.color=nuevoVal?'var(--ok)':'var(--t3)';
-    pasoBoletosEl.childNodes[pasoBoletosEl.childNodes.length-1].textContent=nuevoVal?'Enviados':'Marcar enviados';
-  }
+  document.querySelectorAll('#dc .boletos-env-btn').forEach(function(b){
+    b.style.borderColor=nuevoVal?'rgba(22,163,74,.4)':'var(--bdr2)';
+    b.style.background=nuevoVal?'rgba(22,163,74,.1)':'transparent';
+    b.style.color=nuevoVal?'var(--ok)':'var(--t3)';
+    var nodes=b.childNodes;
+    if(nodes.length) nodes[nodes.length-1].textContent=nuevoVal?' Boletos enviados':' Marcar como enviados';
+  });
   try{
     await crmDB.collection('boletos_env').doc(docId).set({enviado:nuevoVal, correo:correo, ts:Date.now()});
     toast(nuevoVal?'✓ Boletos marcados como enviados':'Boletos desmarcados');
@@ -3030,7 +3030,7 @@ function det(i){
       ?ticketInfo.chips.map(function(ch){return `<span class="badge" style="margin-right:6px;margin-bottom:6px;display:inline-block;font-weight:700;${ticketChipStyle(ch.label)}">${esc(ch.label)} · ${esc(ch.value)}</span>`;}).join('')
       :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
     const bEnv=boletosEnvMap[c.correo];
-    const bBtn=`<button id="paso-boletos" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
+    const bBtn=`<button type="button" class="boletos-env-btn" data-correo="${esc(c.correo)}" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
     ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
       <div>${chipsHtml}<div class="legendaria-chips-slot"></div></div>
@@ -3038,7 +3038,7 @@ function det(i){
     </div>`;
   } else {
     const bEnv=boletosEnvMap[c.correo];
-    const bBtn=`<button id="paso-boletos" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
+    const bBtn=`<button type="button" class="boletos-env-btn" data-correo="${esc(c.correo)}" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
     ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy</span></div>
       <span class="sk-n">${Object.keys(ticketsByEvent).length?'Sin información de boletos para "'+esc(c.evento||'este evento')+'"':'Cargando boletos…'}</span>
@@ -3239,6 +3239,13 @@ function det(i){
   `;
   document.getElementById('dp').classList.add('show');
   lucide.createIcons({nodes:[document.getElementById('dc')]});
+  // ── Botón de boletos enviados (event listener para evitar problemas con innerHTML+onclick) ──
+  document.querySelectorAll('#dc .boletos-env-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      toggleBoletoEnv(btn.dataset.correo, btn);
+    });
+  });
   // ── Verificar existencia en CRM Legendar-IA (server-side, key nunca expuesta) ──
   (function(correoCheck){
     fetch('/api/legendaria-existe?correo='+encodeURIComponent(correoCheck))
