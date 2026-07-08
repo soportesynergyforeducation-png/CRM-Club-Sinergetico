@@ -1629,6 +1629,7 @@ var WRITER_SECRET = 'CS-crm-2026'; // debe coincidir con el script
 // ── FIREBASE REALTIME — notificación entre usuarios ──
 var crmDB = null;
 var crmNotifUnsubscribe = null;
+var boletosEnvMap = {}; // { correo → true } cargado de una sola lectura Firestore
 
 async function initFirebaseRT(){
   try{
@@ -1676,7 +1677,42 @@ async function initFirebaseRT(){
       });
 
     setRTStatus(true);
+    // Carga única de boletos enviados (1 lectura para todos los clientes)
+    loadBoletosEnvMap();
   } catch(e){ console.warn('Firebase RT error:', e); setRTStatus(false); }
+}
+
+function loadBoletosEnvMap(){
+  if(!crmDB) return;
+  crmDB.collection('boletos_env').get().then(function(snap){
+    boletosEnvMap={};
+    snap.forEach(function(doc){ boletosEnvMap[doc.id]=doc.data().enviado===true; });
+    // Re-renderizar lista si ya hay datos cargados
+    if(filtered.length) go();
+  }).catch(function(e){ console.warn('boletos_env load error',e); });
+}
+
+async function toggleBoletoEnv(correo, btn){
+  if(isLector()){toast('⚠ Modo lectura');return;}
+  if(!crmDB){toast('⚠ Firebase no disponible');return;}
+  var docId=correo.replace(/\./g,'_');
+  var nuevoVal=!boletosEnvMap[correo];
+  boletosEnvMap[correo]=nuevoVal;
+  // Actualizar UI inmediatamente
+  document.querySelectorAll('.ab-check[data-correo="'+CSS.escape(correo)+'"]').forEach(function(b){
+    b.classList.toggle('checked', nuevoVal);
+  });
+  // Actualizar fila del paso en el panel si está abierto
+  var pasoBoletosEl=document.getElementById('paso-boletos');
+  if(pasoBoletosEl){
+    pasoBoletosEl.querySelector('.paso-dot').className='paso-dot paso-dot-'+(nuevoVal?'ok':'idle');
+    pasoBoletosEl.querySelector('.paso-right').textContent=nuevoVal?'Enviados':'Pendiente';
+    pasoBoletosEl.dataset.val=nuevoVal?'Si':'';
+  }
+  try{
+    await crmDB.collection('boletos_env').doc(docId).set({enviado:nuevoVal, correo:correo, ts:Date.now()});
+    toast(nuevoVal?'✓ Boletos marcados como enviados':'Boletos desmarcados');
+  }catch(e){ toast('⚠ Error al guardar'); boletosEnvMap[correo]=!nuevoVal; }
 }
 
 function loadFBScript(src){
@@ -1786,8 +1822,7 @@ var SCHEMA_CRM={
   status:     {a:['status','estado','estatus'],                                   f:24, req:true},
   memTipo:    {a:['tipo de membresia','tipo membresia','tipo de membresía','tipo membresía','membresia','membresía'], f:25, req:false},
   memVence:   {a:['vencimiento skool','fecha de vencimiento skool','fecha vencimiento skool','vence skool','vencimiento'], f:10, req:false},
-  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false},
-  boletosEnv: {a:['boletos enviados','boletos env','boletos synergy enviados'], f:28, req:false}
+  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false}
 };
 var SCHEMA_SK={
   nombre: {a:['nombre','name'],                                                   f:2,  req:true},
@@ -2435,7 +2470,6 @@ async function doSyncSilent(){
       apertura:gv(r,cm1.map,'apertura'), finAcceso:gv(r,cm1.map,'finAcceso'),
       status:gv(r,cm1.map,'status').trim().toUpperCase(),
       memTipo:gv(r,cm1.map,'memTipo'), memVence:gv(r,cm1.map,'memVence'), memInvit:gv(r,cm1.map,'memInvit'),
-      boletosEnv:gv(r,cm1.map,'boletosEnv'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
     var newSkoolMap={};
@@ -2532,7 +2566,6 @@ async function doSync(){
       memTipo:   gv(r,cm1.map,'memTipo'),
       memVence:  gv(r,cm1.map,'memVence'),
       memInvit:  gv(r,cm1.map,'memInvit'),
-      boletosEnv:gv(r,cm1.map,'boletosEnv'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
 
@@ -2791,7 +2824,7 @@ function render(data){
       <div class="td" data-col="mem">${ml}</div>
       <div class="td" data-col="vence">${vb}</div>
       <div class="td" data-col="acc"><div class="acts">
-        <button class="ab ab-check${c.boletosEnv==='Si'?' checked':''}" title="Boletos Synergy enviados" onclick="event.stopPropagation();(function(btn,correo){var nuevoVal=btn.classList.contains('checked')?'':'Si';btn.classList.toggle('checked',nuevoVal==='Si');quickSaveField(correo,'boletosEnv',nuevoVal);if(nuevoVal==='Si')toast('✓ Boletos marcados como enviados');else toast('Boletos desmarcados');})(this,'${esc(c.correo)}')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <button class="ab ab-check${boletosEnvMap[c.correo]?' checked':''}" data-correo="${esc(c.correo)}" title="Boletos Synergy enviados" onclick="event.stopPropagation();toggleBoletoEnv('${esc(c.correo)}',this)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
       </div></div>
     </div>`;
   }).join('')+(data.length>500?`<div class="empty" style="padding:12px;font-size:12px">Mostrando 500 de ${data.length.toLocaleString()} — usa filtros para ver más</div>`:'');
@@ -3057,10 +3090,10 @@ function det(i){
       <div class="info-card-h"><span><i data-lucide="list-checks" class="lc"></i> Estado y próximos pasos</span></div>
       ${pasoRow(c.acceso==='No'||c.acceso==='Revocado'?'err':c.acceso?'ok':'idle','Acceso a la plataforma',esc(c.acceso)||'Sin registro')}
       ${pasoRow(c.memInvit==='Si'||c.memInvit==='Invitacion enviada'?'ok':c.memInvit==='No'?'warn':'idle','Invitación Skool',esc(c.memInvit)||'Sin registro')}
-      <div class="paso" style="cursor:pointer" onclick="(function(el,correo){var nuevoVal=el.dataset.val==='Si'?'':'Si';el.dataset.val=nuevoVal;el.querySelector('.paso-dot').className='paso-dot paso-dot-'+(nuevoVal==='Si'?'ok':'idle');el.querySelector('.paso-right').textContent=nuevoVal==='Si'?'Enviados':'Pendiente';quickSaveField(correo,'boletosEnv',nuevoVal);if(nuevoVal==='Si')toast('✓ Boletos marcados como enviados');else toast('Boletos desmarcados');})(this,'${esc(c.correo)}')" data-val="${esc(c.boletosEnv||'')}">
-        <div class="paso-dot paso-dot-${c.boletosEnv==='Si'?'ok':'idle'}"></div>
+      <div class="paso" id="paso-boletos" style="cursor:pointer" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" data-val="${boletosEnvMap[c.correo]?'Si':''}">
+        <div class="paso-dot paso-dot-${boletosEnvMap[c.correo]?'ok':'idle'}"></div>
         <div class="paso-label">Boletos Synergy Unlimited 26</div>
-        <div class="paso-right">${c.boletosEnv==='Si'?'Enviados':'Pendiente'}</div>
+        <div class="paso-right">${boletosEnvMap[c.correo]?'Enviados':'Pendiente'}</div>
       </div>
       ${pasoRow(c.llamada==='Si'?'ok':c.llamada==='Programada'?'warn':c.llamada?'err':'idle','Llamada de seguimiento',esc(c.llamada)||'Sin registro')}
       ${pasoRow(clubActivo?'ok':'err','Renovación Club',clubActivo?'Al día':'Atención',diasClub===null?'':diasClub<0?'Vencido':'Vence en '+diasClub+' días')}
@@ -3369,19 +3402,6 @@ async function guardarCambios(correo){
   btn.disabled=false;
 }
 
-async function quickSaveField(correo, field, value){
-  if(isLector()){toast('⚠ Modo lectura');return;}
-  if(!WRITER_URL) return;
-  const c=filtered.find(x=>x.correo===correo);
-  if(c) c[field]=value;
-  const params=new URLSearchParams();
-  params.append('secret', WRITER_SECRET);
-  params.append('correo', correo);
-  params.append('campos', JSON.stringify({[field]:value}));
-  try{
-    await fetch(WRITER_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
-  }catch(e){}
-}
 
 function cl(id){document.getElementById(id).classList.remove('show');}
 function ovClick(e,id){if(e.target.id===id)cl(id);}
