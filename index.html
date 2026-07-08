@@ -3030,16 +3030,20 @@ function det(i){
       ?ticketInfo.chips.map(function(ch){return `<span class="badge" style="margin-right:6px;margin-bottom:6px;display:inline-block;font-weight:700;${ticketChipStyle(ch.label)}">${esc(ch.label)} · ${esc(ch.value)}</span>`;}).join('')
       :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
     const bEnv=boletosEnvMap[c.correo];
+    const bBtn=`<button id="paso-boletos" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
     ticketBlock=`<div class="info-card">
-      <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span><button id="paso-boletos" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Enviados':'Marcar enviados'}</button></div>
+      <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
       <div>${chipsHtml}<div class="legendaria-chips-slot"></div></div>
+      ${bBtn}
     </div>`;
   } else {
     const bEnv=boletosEnvMap[c.correo];
+    const bBtn=`<button id="paso-boletos" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
     ticketBlock=`<div class="info-card">
-      <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy</span><button id="paso-boletos" onclick="toggleBoletoEnv('${esc(c.correo)}',null)" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Enviados':'Marcar enviados'}</button></div>
+      <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy</span></div>
       <span class="sk-n">${Object.keys(ticketsByEvent).length?'Sin información de boletos para "'+esc(c.evento||'este evento')+'"':'Cargando boletos…'}</span>
       <div class="legendaria-chips-slot"></div>
+      ${bBtn}
     </div>`;
   }
   // Si aún no se ha cargado el inventario de boletos, cargarlo y refrescar esta ficha
