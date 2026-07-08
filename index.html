@@ -579,6 +579,8 @@
     font-size:12px;transition:all .15s;text-decoration:none;
   }
   .ab:hover{background:var(--s3);color:var(--acc);border-color:var(--bdr3)}
+  .ab-check{color:var(--t3)}
+  .ab-check.checked{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.4);color:#16a34a}
 
   /* ── PANEL / MODAL ── */
   .ov{position:fixed;inset:0;background:rgba(17,17,24,0.45);backdrop-filter:blur(8px);z-index:300;display:none;align-items:center;justify-content:center}
@@ -1784,7 +1786,8 @@ var SCHEMA_CRM={
   status:     {a:['status','estado','estatus'],                                   f:24, req:true},
   memTipo:    {a:['tipo de membresia','tipo membresia','tipo de membresía','tipo membresía','membresia','membresía'], f:25, req:false},
   memVence:   {a:['vencimiento skool','fecha de vencimiento skool','fecha vencimiento skool','vence skool','vencimiento'], f:10, req:false},
-  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false}
+  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false},
+  boletosEnv: {a:['boletos enviados','boletos env','boletos synergy enviados'], f:28, req:false}
 };
 var SCHEMA_SK={
   nombre: {a:['nombre','name'],                                                   f:2,  req:true},
@@ -2432,6 +2435,7 @@ async function doSyncSilent(){
       apertura:gv(r,cm1.map,'apertura'), finAcceso:gv(r,cm1.map,'finAcceso'),
       status:gv(r,cm1.map,'status').trim().toUpperCase(),
       memTipo:gv(r,cm1.map,'memTipo'), memVence:gv(r,cm1.map,'memVence'), memInvit:gv(r,cm1.map,'memInvit'),
+      boletosEnv:gv(r,cm1.map,'boletosEnv'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
     var newSkoolMap={};
@@ -2528,6 +2532,7 @@ async function doSync(){
       memTipo:   gv(r,cm1.map,'memTipo'),
       memVence:  gv(r,cm1.map,'memVence'),
       memInvit:  gv(r,cm1.map,'memInvit'),
+      boletosEnv:gv(r,cm1.map,'boletosEnv'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
 
@@ -2786,8 +2791,7 @@ function render(data){
       <div class="td" data-col="mem">${ml}</div>
       <div class="td" data-col="vence">${vb}</div>
       <div class="td" data-col="acc"><div class="acts">
-        ${waUrl?`<a href="${waUrl}" target="_blank" class="ab" title="WhatsApp" onclick="event.stopPropagation()">✆</a>`:`<span class="ab" style="opacity:.25;cursor:default">✆</span>`}
-        <button class="ab" onclick="event.stopPropagation();det(${i})" title="Ver ficha">⊕</button>
+        <button class="ab ab-check${c.boletosEnv==='Si'?' checked':''}" title="Boletos Synergy enviados" onclick="event.stopPropagation();(function(btn,correo){var nuevoVal=btn.classList.contains('checked')?'':'Si';btn.classList.toggle('checked',nuevoVal==='Si');quickSaveField(correo,'boletosEnv',nuevoVal);if(nuevoVal==='Si')toast('✓ Boletos marcados como enviados');else toast('Boletos desmarcados');})(this,'${esc(c.correo)}')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
       </div></div>
     </div>`;
   }).join('')+(data.length>500?`<div class="empty" style="padding:12px;font-size:12px">Mostrando 500 de ${data.length.toLocaleString()} — usa filtros para ver más</div>`:'');
@@ -3053,6 +3057,11 @@ function det(i){
       <div class="info-card-h"><span><i data-lucide="list-checks" class="lc"></i> Estado y próximos pasos</span></div>
       ${pasoRow(c.acceso==='No'||c.acceso==='Revocado'?'err':c.acceso?'ok':'idle','Acceso a la plataforma',esc(c.acceso)||'Sin registro')}
       ${pasoRow(c.memInvit==='Si'||c.memInvit==='Invitacion enviada'?'ok':c.memInvit==='No'?'warn':'idle','Invitación Skool',esc(c.memInvit)||'Sin registro')}
+      <div class="paso" style="cursor:pointer" onclick="(function(el,correo){var nuevoVal=el.dataset.val==='Si'?'':'Si';el.dataset.val=nuevoVal;el.querySelector('.paso-dot').className='paso-dot paso-dot-'+(nuevoVal==='Si'?'ok':'idle');el.querySelector('.paso-right').textContent=nuevoVal==='Si'?'Enviados':'Pendiente';quickSaveField(correo,'boletosEnv',nuevoVal);if(nuevoVal==='Si')toast('✓ Boletos marcados como enviados');else toast('Boletos desmarcados');})(this,'${esc(c.correo)}')" data-val="${esc(c.boletosEnv||'')}">
+        <div class="paso-dot paso-dot-${c.boletosEnv==='Si'?'ok':'idle'}"></div>
+        <div class="paso-label">Boletos Synergy Unlimited 26</div>
+        <div class="paso-right">${c.boletosEnv==='Si'?'Enviados':'Pendiente'}</div>
+      </div>
       ${pasoRow(c.llamada==='Si'?'ok':c.llamada==='Programada'?'warn':c.llamada?'err':'idle','Llamada de seguimiento',esc(c.llamada)||'Sin registro')}
       ${pasoRow(clubActivo?'ok':'err','Renovación Club',clubActivo?'Al día':'Atención',diasClub===null?'':diasClub<0?'Vencido':'Vence en '+diasClub+' días')}
       ${tieneSkool?pasoRow(skoolActivo?'ok':'err','Membresía Skool',skoolActivo?'Activa':'Vencida',_dl||''):''}
@@ -3358,6 +3367,20 @@ async function guardarCambios(correo){
   }
   btn.textContent=orig;
   btn.disabled=false;
+}
+
+async function quickSaveField(correo, field, value){
+  if(isLector()){toast('⚠ Modo lectura');return;}
+  if(!WRITER_URL) return;
+  const c=filtered.find(x=>x.correo===correo);
+  if(c) c[field]=value;
+  const params=new URLSearchParams();
+  params.append('secret', WRITER_SECRET);
+  params.append('correo', correo);
+  params.append('campos', JSON.stringify({[field]:value}));
+  try{
+    await fetch(WRITER_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
+  }catch(e){}
 }
 
 function cl(id){document.getElementById(id).classList.remove('show');}
