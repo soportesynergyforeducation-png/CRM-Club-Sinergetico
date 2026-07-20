@@ -1559,6 +1559,9 @@
         <div class="fc on" onclick="sf2('all',this)">Todos</div>
         <div class="fc" onclick="sf2('activo',this)">Activos</div>
         <div class="fc" onclick="sf2('revocado',this)">Revocados</div>
+        <div class="fc" onclick="sf2('region-mx',this)">MX</div>
+        <div class="fc" onclick="sf2('region-us',this)">US</div>
+        <div class="fc" onclick="sf2('region-latam',this)">LATAM</div>
         <div class="msd" id="msd-ev">
           <button class="msd-btn" id="msd-ev-btn" onclick="toggleMsd('ev')">Todos los eventos</button>
           <div class="msd-drop" id="msd-ev-drop">
@@ -1582,6 +1585,8 @@
         <input type="date" class="date-inp" id="df" onchange="go()">
         <span class="date-lbl">Hasta</span>
         <input type="date" class="date-inp" id="dt" onchange="go()">
+        <span class="date-lbl" style="margin-left:14px"><i data-lucide="calendar-off" class="lc" style="margin-right:4px"></i>Activos antes de</span>
+        <input type="date" class="date-inp" id="dactivo" onchange="go()">
         <button class="date-clr" onclick="clearDates()">✕ Limpiar</button>
         <span class="date-hint" id="date-hint"></span>
       </div>
@@ -2746,6 +2751,23 @@ function updateStats(){
   document.getElementById('nc-hoy').textContent=hoy.length;
 }
 
+function getFinAccesoEfectivo(c){
+  var finAccesoStr=c.finAcceso||'';
+  if(!finAccesoStr||finAccesoStr==='—'||finAccesoStr.toUpperCase().includes('REF')||finAccesoStr.toUpperCase().includes('ERROR')){
+    var dIns=parseDate(c.inscripcion);
+    if(dIns){var dFin=new Date(dIns);dFin.setFullYear(dFin.getFullYear()+1);finAccesoStr=(dFin.getMonth()+1)+'/'+dFin.getDate()+'/'+dFin.getFullYear();}
+  }
+  return finAccesoStr;
+}
+
+function getEventRegion(evento){
+  var ev=(evento||'').toString().toUpperCase().trim();
+  if(ev.startsWith('USA')) return 'US';
+  if(ev.startsWith('WJS-MX')||ev.startsWith('WMDL-MX')||ev.startsWith('WB MDL')) return 'MX';
+  if(ev.startsWith('LATAM')) return 'LATAM';
+  return null;
+}
+
 function go(){
   updateTelQuickBadge();
   const q=document.getElementById('qi').value.toLowerCase().trim();
@@ -2765,6 +2787,9 @@ function go(){
   else if(curF==='skool-pronto') res=res.filter(c=>{const d=daysUntil(parseSkoolDate(c.memVence||c.skVence,c.inscripcion,c.memTipo||c.skMem));return d!==null&&d>0&&d<=15;});
   else if(curF==='skool-exp') res=res.filter(c=>{const d=daysUntil(parseSkoolDate(c.memVence||c.skVence,c.inscripcion,c.memTipo||c.skMem));return d!==null&&d<0;});
   else if(curF==='skool-ok') res=res.filter(c=>{const d=daysUntil(parseSkoolDate(c.memVence||c.skVence,c.inscripcion,c.memTipo||c.skMem));return d!==null&&d>15;});
+  else if(curF==='region-mx') res=res.filter(c=>getEventRegion(c.evento)==='MX');
+  else if(curF==='region-us') res=res.filter(c=>getEventRegion(c.evento)==='US');
+  else if(curF==='region-latam') res=res.filter(c=>getEventRegion(c.evento)==='LATAM');
   if(q) res=res.filter(c=>[c.nombre,c.correo,c.telefono,c.ciudad,c.evento,c.notas,c.soporte,c.renovar,c.skMem,c.skHoja].join(' ').toLowerCase().includes(q));
   if(evSel.size) res=res.filter(c=>evSel.has(c.evento));
   if(memSel.size) res=res.filter(c=>memSel.has(c.memTipo||c.skMem));
@@ -2787,6 +2812,18 @@ function go(){
   } else {
     var hEl=document.getElementById('date-hint');
     if(hEl) hEl.textContent='';
+  }
+  // Filtro: activos antes de fecha X, inactivos a partir de esa fecha (por fin de acceso)
+  var daEl=document.getElementById('dactivo');
+  if(daEl&&daEl.value){
+    var cutoff=new Date(daEl.value+'T00:00:00');
+    res=res.filter(function(c){
+      var d=parseDate(getFinAccesoEfectivo(c));
+      if(!d) return false;
+      return d.getFullYear()===cutoff.getFullYear()&&d.getMonth()===cutoff.getMonth()&&d.getDate()===cutoff.getDate();
+    });
+    var hEl2=document.getElementById('date-hint');
+    if(hEl2) hEl2.textContent=(hEl2.textContent?hEl2.textContent+' · ':'')+'Vigentes hasta '+cutoff.toLocaleDateString('es-MX');
   }
   filtered=res;
   document.getElementById('rc').textContent=res.length.toLocaleString()+' contactos';
@@ -2876,11 +2913,7 @@ function det(i){
   const note=notes[c.id]||c.notas||'';
   const rawTel=(c.telefono||'').replace(/\D/g,'');
   const waUrl=rawTel?`https://wa.me/${rawTel}`:'';
-  let finAccesoStr=c.finAcceso||'';
-  if(!finAccesoStr||finAccesoStr==='—'||finAccesoStr.toUpperCase().includes('REF')||finAccesoStr.toUpperCase().includes('ERROR')){
-    const dIns=parseDate(c.inscripcion);
-    if(dIns){const dFin=new Date(dIns);dFin.setFullYear(dFin.getFullYear()+1);finAccesoStr=(dFin.getMonth()+1)+'/'+dFin.getDate()+'/'+dFin.getFullYear();}
-  }
+  let finAccesoStr=getFinAccesoEfectivo(c);
 
   // Helper: campo editable — muestra valor estático + input oculto
   function ef(field, label, value, type='text'){
@@ -3460,8 +3493,8 @@ function addC(){
 }
 
 function clearDates(){
-  var df=document.getElementById('df'), dt=document.getElementById('dt');
-  if(df) df.value=''; if(dt) dt.value='';
+  var df=document.getElementById('df'), dt=document.getElementById('dt'), da=document.getElementById('dactivo');
+  if(df) df.value=''; if(dt) dt.value=''; if(da) da.value='';
   var h=document.getElementById('date-hint'); if(h) h.textContent='';
   go();
 }

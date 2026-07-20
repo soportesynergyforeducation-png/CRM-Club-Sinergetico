@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // --- CRM (plataforma existente) ---
+    match /crm_eventos/{doc} {
+      allow read, write: if true;
+    }
+    match /crm_notifs/{doc} {
+      allow read, write: if true;
+    }
+    match /boletos_env/{doc} {
+      allow read, write: if true;
+    }
+    match /crm_presence/{doc} {
+      allow read, write: if true;
+    }
+
+    // --- Coordinación Club Sinergético ---
+    match /sessions/{doc} {
+      allow read, write: if true;
+    }
+    match /mentors/{doc} {
+      allow read, write: if true;
+    }
+    match /notifs/{doc} {
+      allow read, write: if true;
+    }
+    match /eventos/{doc} {
+      allow read, write: if true;
+    }
+    match /config/{doc} {
+      allow read, write: if true;
+    }
+  }
+}
