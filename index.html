@@ -1585,7 +1585,7 @@
         <input type="date" class="date-inp" id="df" onchange="go()">
         <span class="date-lbl">Hasta</span>
         <input type="date" class="date-inp" id="dt" onchange="go()">
-        <span class="date-lbl" style="margin-left:14px"><i data-lucide="calendar-off" class="lc" style="margin-right:4px"></i>Activos antes de</span>
+        <span class="date-lbl" style="margin-left:14px" title="Muestra a quienes su acceso ya venció en o antes de esta fecha (no podrán asistir a un evento en esa fecha)"><i data-lucide="calendar-off" class="lc" style="margin-right:4px"></i>Vencidos antes de</span>
         <input type="date" class="date-inp" id="dactivo" onchange="go()">
         <button class="date-clr" onclick="clearDates()">✕ Limpiar</button>
         <span class="date-hint" id="date-hint"></span>
@@ -2813,17 +2813,17 @@ function go(){
     var hEl=document.getElementById('date-hint');
     if(hEl) hEl.textContent='';
   }
-  // Filtro: activos antes de fecha X, inactivos a partir de esa fecha (por fin de acceso)
+  // Filtro: quiénes NO podrán asistir a un evento en fecha X (acceso vencido en o antes de esa fecha)
   var daEl=document.getElementById('dactivo');
   if(daEl&&daEl.value){
-    var cutoff=new Date(daEl.value+'T00:00:00');
+    var cutoff=new Date(daEl.value+'T23:59:59');
     res=res.filter(function(c){
       var d=parseDate(getFinAccesoEfectivo(c));
       if(!d) return false;
-      return d.getFullYear()===cutoff.getFullYear()&&d.getMonth()===cutoff.getMonth()&&d.getDate()===cutoff.getDate();
+      return d<=cutoff;
     });
     var hEl2=document.getElementById('date-hint');
-    if(hEl2) hEl2.textContent=(hEl2.textContent?hEl2.textContent+' · ':'')+'Vigentes hasta '+cutoff.toLocaleDateString('es-MX');
+    if(hEl2) hEl2.textContent=(hEl2.textContent?hEl2.textContent+' · ':'')+'Vencidos hasta '+new Date(daEl.value+'T00:00:00').toLocaleDateString('es-MX');
   }
   filtered=res;
   document.getElementById('rc').textContent=res.length.toLocaleString()+' contactos';
