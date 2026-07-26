@@ -3419,14 +3419,19 @@ async function guardarCambios(correo){
     params.append('correo', correo);           // correo ORIGINAL para buscar la fila
     params.append('campos', JSON.stringify(campos)); // campos[correo] puede tener el nuevo valor
 
-    await fetch(WRITER_URL, {
+    const resp = await fetch(WRITER_URL, {
       method:'POST',
-      mode:'no-cors',
       headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:params.toString()
     });
+    const data = await resp.json();
+    if(!data.ok){
+      toast('⚠ '+(data.error||'El Sheet rechazó el cambio'));
+      btn.textContent=orig;
+      btn.disabled=false;
+      return;
+    }
 
-    // no-cors no devuelve respuesta legible, asumimos éxito si no hay excepción
     const c=filtered.find(x=>x.correo===correo);
     if(c) Object.keys(campos).forEach(function(k){c[k]=campos[k];});
     // Actualizar los spans de display en el panel para reflejar los nuevos valores sin reabrir
@@ -4026,7 +4031,7 @@ async function insertTelResults(){
   var btn = document.querySelector('#tel-results .saveb');
   if(btn){ btn.disabled=true; btn.textContent='Insertando…'; }
 
-  var ok=0, errors=0, inserted=[];
+  var ok=0, errors=0, inserted=[], failed=[];
   for(var i=0; i<entries.length; i++){
     var email = entries[i];
     var entry = map[email];
@@ -4039,14 +4044,21 @@ async function insertTelResults(){
       params.append('secret', WRITER_SECRET);
       params.append('correo', email);
       params.append('campos', JSON.stringify({telefono: phone}));
-      await fetch(WRITER_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
+      var resp = await fetch(WRITER_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params.toString()});
+      var data = await resp.json();
+      if(!data.ok){
+        errors++;
+        failed.push({email:email,phone:phone,error:data.error||'error desconocido'});
+        continue;
+      }
       var c = all.find(function(x){return (x.correo||'').toLowerCase()===email;});
       if(c) c.telefono = phone;
       inserted.push({email:email,phone:phone,source:source,tab:tab,fromBackup:fromBackup});
       ok++;
-    } catch(e){ errors++; }
+    } catch(e){ errors++; failed.push({email:email,phone:phone,error:'conexión fallida'}); }
   }
 
+  if(failed.length){ console.warn('Teléfonos NO insertados:', failed); }
   toast('✓ '+ok+' teléfonos insertados en Sheets'+(errors?' · '+errors+' errores':''));
   updateTelQuickBadge();
 
@@ -4065,9 +4077,18 @@ async function insertTelResults(){
     '</div>';
   });
 
+  var failRows=failed.map(function(f){
+    return '<div class="tel-row" style="flex-wrap:wrap;gap:6px">'+
+      '<span style="font-size:10px;font-weight:700;color:var(--err);padding:1px 6px;background:rgba(219,90,90,0.12);border-radius:8px">✕ falló</span>'+
+      '<span class="tel-num">'+esc(f.phone)+'</span>'+
+      '<span style="font-size:12px;color:var(--t3);flex:1">'+esc(f.email)+'</span>'+
+      '<span style="font-size:10px;color:var(--err)">'+esc(f.error)+'</span>'+
+    '</div>';
+  });
+
   document.getElementById('tel-results').innerHTML=
     '<div style="font-size:11px;color:var(--ok);margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">✓ '+ok+' teléfonos insertados'+(errors?' · <span style="color:var(--err)">'+errors+' errores</span>':'')+'</div>'+
-    '<div style="margin-bottom:12px">'+rows.join('')+'</div>'+
+    '<div style="margin-bottom:12px">'+rows.join('')+failRows.join('')+'</div>'+
     '<button class="saveb" style="width:100%;background:var(--t4);color:var(--t2)" onclick="runTelSearch()">🔄 Buscar de nuevo</button>';
 }
 
