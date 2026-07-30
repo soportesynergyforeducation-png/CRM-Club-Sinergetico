@@ -1232,23 +1232,25 @@
   .dash-wrapper{overflow:hidden;max-height:0;transition:max-height .3s cubic-bezier(.4,0,.2,1),opacity .25s;opacity:0}
   .dash-wrapper.open{max-height:400px;opacity:1}
 
-  /* ── MODO LECTOR: ocultar/desactivar todo lo que escribe datos ── */
-  body.lector-mode .addbtn,
-  body.lector-mode .mbb-add,
-  body.lector-mode .telbtn,
-  body.lector-mode .mbb-tel,
-  body.lector-mode #edit-toggle,
+  /* ── MODO SOLO LECTURA (admin y lector): ocultar/desactivar todo lo que escribe datos ── */
+  body.readonly-mode .addbtn,
+  body.readonly-mode .mbb-add,
+  body.readonly-mode .telbtn,
+  body.readonly-mode .mbb-tel,
+  body.readonly-mode #edit-toggle,
+  body.readonly-mode #presence-wrapper,
+  body.readonly-mode #notif-wrapper,
+  body.readonly-mode .ns,
+  body.readonly-mode #syncBtn,
+  body.readonly-mode #ss,
+  body.readonly-mode #rt-status,
+  body.readonly-mode .sf > .sbtn[onclick="openConfig()"],
+  body.readonly-mode #expBtn,
+  body.readonly-mode .mbb-exp{display:none!important}
+
+  /* ── MODO LECTOR (adicional): solo ve la lista de clientes, sin dashboard ── */
   body.lector-mode #page-dashboard,
-  body.lector-mode #presence-wrapper,
-  body.lector-mode #notif-wrapper,
-  body.lector-mode .ns,
-  body.lector-mode #syncBtn,
-  body.lector-mode #ss,
-  body.lector-mode #rt-status,
-  body.lector-mode .sf > .sbtn[onclick="openConfig()"],
-  body.lector-mode .ni:not(#nav-clientes),
-  body.lector-mode #expBtn,
-  body.lector-mode .mbb-exp{display:none!important}
+  body.lector-mode .ni:not(#nav-clientes){display:none!important}
 
   /* ── ACCESS GATE (onboarding split-screen) ── */
   .ag-wrap{position:fixed;inset:0;z-index:10000;display:flex;background:#070c16;font-family:var(--font,system-ui)}
@@ -1316,7 +1318,7 @@
       <p>Renovaciones, seguimiento y comunicación con tus miembros, todo en un solo lugar.</p>
       <ul>
         <li>Seguimiento de membresías en tiempo real</li>
-        <li>Control de acceso por roles (admin / vendedor)</li>
+        <li>Control de acceso por roles (propietario / admin / vendedor)</li>
         <li>Registro de quién entra y cuándo</li>
       </ul>
     </div>
@@ -1701,7 +1703,7 @@ function loadBoletosEnvMap(){
 }
 
 async function toggleBoletoEnv(correo, btn){
-  if(isLector()){toast('⚠ Modo lectura');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura');return;}
   if(!crmDB){toast('⚠ Firebase no disponible');return;}
   var docId=correo.replace(/\./g,'_');
   var nuevoVal=!boletosEnvMap[correo];
@@ -2096,7 +2098,7 @@ function togglePSrc(i){
 }
 
 function removePSrc(i){
-  if(isLector()){toast('⚠ Modo lectura: no puedes eliminar fuentes');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes eliminar fuentes');return;}
   var allSrc=getAllPhoneSources();var s=allSrc[i];if(s&&s.fixed){toast('⚠ Esta fuente es fija y no se puede eliminar');return;}var ui=extraPhoneSources.indexOf(s);if(ui>=0)extraPhoneSources.splice(ui,1);
   if(s){clearPhoneCache(s.id);}
   savePhoneSources(); _refreshTelSrcUI();
@@ -2109,7 +2111,7 @@ function showAddSrcForm(){
 }
 
 function addSrcFromForm(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes agregar fuentes');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes agregar fuentes');return;}
   var label=(document.getElementById('src-label').value||'').trim();
   var sheetRaw=(document.getElementById('src-sheet').value||'').trim();
   var tab=(document.getElementById('src-tab').value||'').trim();
@@ -3013,7 +3015,7 @@ function det(i){
   }
 
   const writerReady=!!WRITER_URL;
-  const lector=isLector();
+  const lector=isReadOnly();
 
   // ── Estado calculado para Resumen / banner / pasos ──
   const dFinClub=parseDate(finAccesoStr);
@@ -3366,7 +3368,7 @@ function det(i){
 }
 
 function toggleEditMode(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes editar contactos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes editar contactos');return;}
   const panel=document.getElementById('dc');
   const btn=document.getElementById('edit-toggle');
   const isEditing=panel.classList.contains('edit-mode');
@@ -3387,7 +3389,7 @@ function toggleEditMode(){
 }
 
 async function guardarCambios(correo){
-  if(isLector()){toast('⚠ Modo lectura: no puedes guardar cambios');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes guardar cambios');return;}
   if(!WRITER_URL){
     toast('⚠ Configura WRITER_URL primero');
     return;
@@ -3459,7 +3461,7 @@ function cl(id){document.getElementById(id).classList.remove('show');}
 function ovClick(e,id){if(e.target.id===id)cl(id);}
 
 function openAdd(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
   document.getElementById('ac').innerHTML=`
     <button class="pc" onclick="cl('ap')">✕</button>
     <div style="font-size:17px;font-weight:700;color:var(--t1);margin-bottom:18px;letter-spacing:-.2px">Agregar contacto</div>
@@ -3481,7 +3483,7 @@ function openAdd(){
 }
 
 function addC(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
   const n=document.getElementById('nn').value.trim(),e=document.getElementById('ne').value.trim();
   if(!n||!e){toast('⚠ Nombre y correo requeridos');return;}
   all.unshift({id:Date.now().toString(),nombre:n,correo:e.toLowerCase(),
@@ -3578,7 +3580,7 @@ function closeSidebar(){
 }
 
 function exportCSV(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes exportar');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes exportar');return;}
   if(!filtered.length){toast('⚠ No hay contactos para exportar');return;}
   const H=['ID','Nombre','Correo','Pais','Telefono','Inscripcion','Fecha Evento','Evento','Acceso','WhatsApp','Renovacion','Notas','Otras Notas','Telegram','Happiness','Encuesta','Soporte','Status','Tipo Membresia','Fecha Vence Skool','Invitacion Skool','Membresia Skool (Sheet2)','Vence Skool (Sheet2)','Hoja Skool','Estado Skool'];
   function q(v){var s=String(v||'').replace(/"/g,'""');return(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)?'"'+s+'"':s;}
@@ -4019,7 +4021,7 @@ function telSwitchTab(tab){
 }
 
 async function insertTelResults(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes insertar teléfonos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes insertar teléfonos');return;}
   _cancelAutoInsert();
   var map = window._telInsertMap || {};
   // Filtrar solo los que tienen teléfono real (no 'x')
@@ -4701,7 +4703,7 @@ function _calcTipoMemPreview(mem, evento){
 }
 
 async function confirmarSkoolSync(soloConMem){
-  if(isLector()){toast('⚠ Modo lectura: no puedes sincronizar a Skool');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes sincronizar a Skool');return;}
   var lista=soloConMem
     ?_skoolSyncPendientes.filter(function(p){return p.membresia;})
     :_skoolSyncPendientes;
@@ -4790,20 +4792,24 @@ function setRTStatus(on){
   }
 }
 
-// ── ACCESO POR ROL (admin / lector) ──
+// ── ACCESO POR ROL (propietario / admin / lector) ──
 // Cambia estos códigos por los que quieras usar
-var ACCESS_CODES={ 'CS-ADMIN-2026':'admin', 'CS-LECTOR-2026':'lector' };
+var ACCESS_CODES={ 'CS-PROPIETARIO-2026':'propietario', 'CS-ADMIN-2026':'admin', 'CS-LECTOR-2026':'lector' };
 
+function isOwner(){ return localStorage.getItem('crm_role')==='propietario'; }
 function isLector(){ return localStorage.getItem('crm_role')==='lector'; }
+// Admin y lector no pueden editar nada; solo el propietario tiene acceso de escritura.
+function isReadOnly(){ var r=localStorage.getItem('crm_role'); return r==='admin'||r==='lector'; }
 
 function initialsOf(name){
   return (name||'?').trim().split(/\s+/).map(function(w){return w[0]||'';}).slice(0,2).join('').toUpperCase();
 }
 
-function roleLabel(role){ return role==='admin'?'Admin':'Vendedor'; }
+function roleLabel(role){ if(role==='propietario') return 'Propietario'; if(role==='admin') return 'Admin'; return 'Vendedor'; }
 
 function applyRoleUI(){
   document.body.classList.toggle('lector-mode', isLector());
+  document.body.classList.toggle('readonly-mode', isReadOnly());
   renderUserChips();
   if(isLector() && typeof switchPage==='function'){ switchPage('clientes'); }
 }
@@ -4852,7 +4858,7 @@ function checkAccessCode(){
   try{
     var role=localStorage.getItem('crm_role');
     var name=localStorage.getItem('crm_username');
-    if((role==='admin'||role==='lector')&&name){
+    if((role==='propietario'||role==='admin'||role==='lector')&&name){
       document.getElementById('access-gate').style.display='none';
     }
   }catch(e){}
