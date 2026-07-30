@@ -1244,13 +1244,16 @@
   body.readonly-mode #syncBtn,
   body.readonly-mode #ss,
   body.readonly-mode #rt-status,
-  body.readonly-mode .sf > .sbtn[onclick="openConfig()"],
-  body.readonly-mode #expBtn,
-  body.readonly-mode .mbb-exp{display:none!important}
+  body.readonly-mode .sf > .sbtn[onclick="openConfig()"]{display:none!important}
 
-  /* ── MODO LECTOR (adicional): solo ve la lista de clientes, sin dashboard ── */
+  /* ── MODO LECTOR (adicional): solo ve la lista de clientes, sin dashboard ni exportar ── */
   body.lector-mode #page-dashboard,
+  body.lector-mode #expBtn,
+  body.lector-mode .mbb-exp,
   body.lector-mode .ni:not(#nav-clientes){display:none!important}
+
+  /* ── MODO ADMIN (adicional): oculta filtros rápidos y herramientas, deja Dashboard + Clientes ── */
+  body.admin-mode .ni:not(#nav-dashboard):not(#nav-clientes){display:none!important}
 
   /* ── ACCESS GATE (onboarding split-screen) ── */
   .ag-wrap{position:fixed;inset:0;z-index:10000;display:flex;background:#070c16;font-family:var(--font,system-ui)}
@@ -3580,7 +3583,7 @@ function closeSidebar(){
 }
 
 function exportCSV(){
-  if(isReadOnly()){toast('⚠ Modo lectura: no puedes exportar');return;}
+  if(isLector()){toast('⚠ Modo lectura: no puedes exportar');return;}
   if(!filtered.length){toast('⚠ No hay contactos para exportar');return;}
   const H=['ID','Nombre','Correo','Pais','Telefono','Inscripcion','Fecha Evento','Evento','Acceso','WhatsApp','Renovacion','Notas','Otras Notas','Telegram','Happiness','Encuesta','Soporte','Status','Tipo Membresia','Fecha Vence Skool','Invitacion Skool','Membresia Skool (Sheet2)','Vence Skool (Sheet2)','Hoja Skool','Estado Skool'];
   function q(v){var s=String(v||'').replace(/"/g,'""');return(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)?'"'+s+'"':s;}
@@ -4809,6 +4812,7 @@ function roleLabel(role){ if(role==='propietario') return 'Propietario'; if(role
 
 function applyRoleUI(){
   document.body.classList.toggle('lector-mode', isLector());
+  document.body.classList.toggle('admin-mode', localStorage.getItem('crm_role')==='admin');
   document.body.classList.toggle('readonly-mode', isReadOnly());
   renderUserChips();
   if(isLector() && typeof switchPage==='function'){ switchPage('clientes'); }
