@@ -1718,7 +1718,7 @@ function loadBoletosEnvMap(){
       var d=doc.data();
       var correoKey=d.correo||doc.id;
       boletosEnvMap[correoKey]=d.enviado===true;
-      if(d.tipoBoleto) boletoOverrideMap[correoKey]={tipo:d.tipoBoleto, nota:d.notaUpgrade||'', cantidad:d.cantidadBoleto||'', gralCantidad:d.gralCantidad||'', vipCantidad:d.vipCantidad||''};
+      if(d.tipoBoleto) boletoOverrideMap[correoKey]={tipo:d.tipoBoleto, nota:d.notaUpgrade||'', cantidad:d.cantidadBoleto||'', gralCantidad:d.gralCantidad||'', vipCantidad:d.vipCantidad||'', blackCantidad:d.blackCantidad||''};
     });
     // Re-renderizar lista si ya hay datos cargados
     if(filtered.length) go();
@@ -2495,13 +2495,16 @@ function getTicketInfo(c, finAccesoStr){
       return ch.label.indexOf('GRAL')>=0||ch.label.indexOf('VIP')>=0 ? {label:'BLACK', value:override.cantidad||ch.value} : ch;
     });
   } else if(override&&override.tipo==='MIXTO'){
-    // Parte de sus boletos GRAL hizo upgrade a VIP, el resto sigue en GRAL
+    // Parte de sus boletos GRAL hizo upgrade (a VIP y/o BLACK), el resto sigue en GRAL
     var gralChip=chips.find(function(ch){return ch.label.indexOf('GRAL')>=0;});
     chips=chips.map(function(ch){
       return ch.label.indexOf('GRAL')>=0 ? {label:ch.label, value:override.gralCantidad||ch.value} : ch;
     });
-    if(gralChip){
-      chips.push({label:gralChip.label.replace('GRAL','VIP'), value:override.vipCantidad||'1'});
+    if(gralChip&&override.vipCantidad){
+      chips.push({label:gralChip.label.replace('GRAL','VIP'), value:override.vipCantidad});
+    }
+    if(override.blackCantidad){
+      chips.push({label:'BLACK', value:override.blackCantidad});
     }
   }
 
