@@ -1692,35 +1692,34 @@ async function initFirebaseRT(){
     setRTStatus(true);
     // Carga única de boletos enviados (1 lectura para todos los clientes)
     loadBoletosEnvMap();
-    loadBoletoOverrideMap();
   } catch(e){ console.warn('Firebase RT error:', e); setRTStatus(false); }
 }
+
+// ── OVERRIDE MANUAL DE TIPO DE BOLETO (ej. upgrades General→VIP) ──
+// Los chips de "Boletos Synergy" se calculan por evento+membresía y son
+// compartidos por todos los asistentes del mismo evento. boletoOverrideMap
+// permite anotar, por contacto individual, que su boleto real es distinto
+// (ej. hizo upgrade a VIP) sin afectar a los demás del mismo evento.
+// Se guarda dentro de la misma colección Firestore "boletos_env" (campos
+// tipoBoleto/notaUpgrade) porque las reglas de seguridad ya la permiten;
+// crear una colección nueva ("boletos_override") queda bloqueada por esas
+// reglas y requeriría editarlas en la consola de Firebase.
+var boletoOverrideMap={}; // correo -> {tipo:'VIP'|'BLACK', nota:''}
 
 function loadBoletosEnvMap(){
   if(!crmDB) return;
   crmDB.collection('boletos_env').get().then(function(snap){
     boletosEnvMap={};
-    snap.forEach(function(doc){ boletosEnvMap[doc.id]=doc.data().enviado===true; });
+    boletoOverrideMap={};
+    snap.forEach(function(doc){
+      var d=doc.data();
+      var correoKey=d.correo||doc.id;
+      boletosEnvMap[correoKey]=d.enviado===true;
+      if(d.tipoBoleto) boletoOverrideMap[correoKey]={tipo:d.tipoBoleto, nota:d.notaUpgrade||''};
+    });
     // Re-renderizar lista si ya hay datos cargados
     if(filtered.length) go();
   }).catch(function(e){ console.warn('boletos_env load error',e); });
-}
-
-// ── OVERRIDE MANUAL DE TIPO DE BOLETO (ej. upgrades General→VIP) ──
-// Los chips de "Boletos Synergy" se calculan por evento+membresía y son
-// compartidos por todos los asistentes del mismo evento. Este mapa permite
-// anotar, por contacto individual, que su boleto real es distinto (ej. hizo
-// upgrade a VIP) sin afectar a los demás del mismo evento. Vive en Firestore
-// para no depender de columnas del Sheet ni de redeploys del Apps Script.
-var boletoOverrideMap={}; // correo -> {tipo:'VIP'|'BLACK', nota:'', ts}
-
-function loadBoletoOverrideMap(){
-  if(!crmDB) return;
-  crmDB.collection('boletos_override').get().then(function(snap){
-    boletoOverrideMap={};
-    snap.forEach(function(doc){ boletoOverrideMap[doc.id]=doc.data(); });
-    if(filtered.length) go();
-  }).catch(function(e){ console.warn('boletos_override load error',e); });
 }
 
 async function toggleBoletoEnv(correo, btn){
