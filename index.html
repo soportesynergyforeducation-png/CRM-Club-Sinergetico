@@ -1836,7 +1836,8 @@ var SCHEMA_CRM={
   status:     {a:['status','estado','estatus'],                                   f:24, req:true},
   memTipo:    {a:['tipo de membresia','tipo membresia','tipo de membresía','tipo membresía','membresia','membresía'], f:25, req:false},
   memVence:   {a:['vencimiento skool','fecha de vencimiento skool','fecha vencimiento skool','vence skool','vencimiento'], f:10, req:false},
-  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false}
+  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false},
+  boletoOverride: {a:['tipo de boleto synergy unlimited','tipo de boleto','boleto synergy unlimited'], f:21, req:false}
 };
 var SCHEMA_SK={
   nombre: {a:['nombre','name'],                                                   f:2,  req:true},
@@ -2460,6 +2461,22 @@ function getTicketInfo(c, finAccesoStr){
     });
   }
   if(row.black) chips.push({label:'BLACK', value:row.black});
+
+  // Override manual por contacto (columna "TIPO DE BOLETO SYNERGY UNLIMITED"):
+  // permite reflejar upgrades individuales (ej. General→VIP) sin afectar a
+  // otros asistentes del mismo evento, ya que los chips normalmente se
+  // calculan por evento+membresía y son compartidos por todos los del evento.
+  var overrideRaw=(c.boletoOverride||'').toString().trim().toUpperCase();
+  if(overrideRaw==='VIP'){
+    chips=chips.map(function(ch){
+      return ch.label.indexOf('GRAL')>=0 ? {label:ch.label.replace('GRAL','VIP'), value:ch.value} : ch;
+    });
+  } else if(overrideRaw==='BLACK'){
+    chips=chips.map(function(ch){
+      return ch.label.indexOf('GRAL')>=0||ch.label.indexOf('VIP')>=0 ? {label:'BLACK', value:ch.value} : ch;
+    });
+  }
+
   return {active:true, found:true, dur:dur, chips:chips};
 }
 
@@ -2485,6 +2502,7 @@ async function doSyncSilent(){
       apertura:gv(r,cm1.map,'apertura'), finAcceso:gv(r,cm1.map,'finAcceso'),
       status:gv(r,cm1.map,'status').trim().toUpperCase(),
       memTipo:gv(r,cm1.map,'memTipo'), memVence:gv(r,cm1.map,'memVence'), memInvit:gv(r,cm1.map,'memInvit'),
+      boletoOverride:gv(r,cm1.map,'boletoOverride'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
     var newSkoolMap={};
@@ -2581,6 +2599,7 @@ async function doSync(){
       memTipo:   gv(r,cm1.map,'memTipo'),
       memVence:  gv(r,cm1.map,'memVence'),
       memInvit:  gv(r,cm1.map,'memInvit'),
+      boletoOverride: gv(r,cm1.map,'boletoOverride'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
 

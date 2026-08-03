@@ -33,7 +33,10 @@ var FIELD_MAP = {
   // ── Membresía Skool (Sheet 1) ──
   memTipo:     ['tipo de membresia', 'tipo membresia', 'tipo de membresía', 'tipo membresía', 'membresia', 'membresía'],
   memVence:    ['fecha de vencimiento skool', 'vencimiento skool', 'fecha vencimiento skool', 'vence skool'],
-  memInvit:    ['invitacion de skool', 'invitación de skool', 'invitacion skool', 'invitación skool', 'invitacion']
+  memInvit:    ['invitacion de skool', 'invitación de skool', 'invitacion skool', 'invitación skool', 'invitacion'],
+
+  // ── Boletos ──
+  boletoTipo:  ['tipo de boleto synergy unlimited', 'tipo de boleto', 'boleto synergy unlimited']
 };
 
 // ── CORS ──────────────────────────────────────────────────
