@@ -1692,6 +1692,7 @@ async function initFirebaseRT(){
     setRTStatus(true);
     // Carga única de boletos enviados (1 lectura para todos los clientes)
     loadBoletosEnvMap();
+    loadBoletoOverrideMap();
   } catch(e){ console.warn('Firebase RT error:', e); setRTStatus(false); }
 }
 
@@ -1703,6 +1704,23 @@ function loadBoletosEnvMap(){
     // Re-renderizar lista si ya hay datos cargados
     if(filtered.length) go();
   }).catch(function(e){ console.warn('boletos_env load error',e); });
+}
+
+// ── OVERRIDE MANUAL DE TIPO DE BOLETO (ej. upgrades General→VIP) ──
+// Los chips de "Boletos Synergy" se calculan por evento+membresía y son
+// compartidos por todos los asistentes del mismo evento. Este mapa permite
+// anotar, por contacto individual, que su boleto real es distinto (ej. hizo
+// upgrade a VIP) sin afectar a los demás del mismo evento. Vive en Firestore
+// para no depender de columnas del Sheet ni de redeploys del Apps Script.
+var boletoOverrideMap={}; // correo -> {tipo:'VIP'|'BLACK', nota:'', ts}
+
+function loadBoletoOverrideMap(){
+  if(!crmDB) return;
+  crmDB.collection('boletos_override').get().then(function(snap){
+    boletoOverrideMap={};
+    snap.forEach(function(doc){ boletoOverrideMap[doc.id]=doc.data(); });
+    if(filtered.length) go();
+  }).catch(function(e){ console.warn('boletos_override load error',e); });
 }
 
 async function toggleBoletoEnv(correo, btn){
@@ -1836,8 +1854,7 @@ var SCHEMA_CRM={
   status:     {a:['status','estado','estatus'],                                   f:24, req:true},
   memTipo:    {a:['tipo de membresia','tipo membresia','tipo de membresía','tipo membresía','membresia','membresía'], f:25, req:false},
   memVence:   {a:['vencimiento skool','fecha de vencimiento skool','fecha vencimiento skool','vence skool','vencimiento'], f:10, req:false},
-  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false},
-  boletoOverride: {a:['tipo de boleto synergy unlimited','tipo de boleto','boleto synergy unlimited'], f:21, req:false}
+  memInvit:   {a:['invitacion de skool','invitación de skool','invitacion skool','invitación skool','invitacion'], f:27, req:false}
 };
 var SCHEMA_SK={
   nombre: {a:['nombre','name'],                                                   f:2,  req:true},
@@ -2462,22 +2479,22 @@ function getTicketInfo(c, finAccesoStr){
   }
   if(row.black) chips.push({label:'BLACK', value:row.black});
 
-  // Override manual por contacto (columna "TIPO DE BOLETO SYNERGY UNLIMITED"):
-  // permite reflejar upgrades individuales (ej. General→VIP) sin afectar a
-  // otros asistentes del mismo evento, ya que los chips normalmente se
-  // calculan por evento+membresía y son compartidos por todos los del evento.
-  var overrideRaw=(c.boletoOverride||'').toString().trim().toUpperCase();
-  if(overrideRaw==='VIP'){
+  // Override manual por contacto (Firestore: boletos_override) — permite
+  // reflejar upgrades individuales (ej. General→VIP) sin afectar a otros
+  // asistentes del mismo evento, ya que los chips normalmente se calculan
+  // por evento+membresía y son compartidos por todos los del evento.
+  var override=boletoOverrideMap[c.correo];
+  if(override&&override.tipo==='VIP'){
     chips=chips.map(function(ch){
       return ch.label.indexOf('GRAL')>=0 ? {label:ch.label.replace('GRAL','VIP'), value:ch.value} : ch;
     });
-  } else if(overrideRaw==='BLACK'){
+  } else if(override&&override.tipo==='BLACK'){
     chips=chips.map(function(ch){
       return ch.label.indexOf('GRAL')>=0||ch.label.indexOf('VIP')>=0 ? {label:'BLACK', value:ch.value} : ch;
     });
   }
 
-  return {active:true, found:true, dur:dur, chips:chips};
+  return {active:true, found:true, dur:dur, chips:chips, overrideNota:override?override.nota:''};
 }
 
 // ── SYNC SILENCIOSO ──
@@ -2502,7 +2519,6 @@ async function doSyncSilent(){
       apertura:gv(r,cm1.map,'apertura'), finAcceso:gv(r,cm1.map,'finAcceso'),
       status:gv(r,cm1.map,'status').trim().toUpperCase(),
       memTipo:gv(r,cm1.map,'memTipo'), memVence:gv(r,cm1.map,'memVence'), memInvit:gv(r,cm1.map,'memInvit'),
-      boletoOverride:gv(r,cm1.map,'boletoOverride'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
     var newSkoolMap={};
@@ -2599,7 +2615,6 @@ async function doSync(){
       memTipo:   gv(r,cm1.map,'memTipo'),
       memVence:  gv(r,cm1.map,'memVence'),
       memInvit:  gv(r,cm1.map,'memInvit'),
-      boletoOverride: gv(r,cm1.map,'boletoOverride'),
       skMem:'',skVence:'',skHoja:'',skEstado:''
     })).reverse();
 
@@ -3091,9 +3106,11 @@ function det(i){
       :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
     const bEnv=boletosEnvMap[c.correo];
     const bBtn=`<button type="button" class="boletos-env-btn" data-correo="${esc(c.correo)}" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
+    const overrideNotaHtml=ticketInfo.overrideNota?`<div style="margin-top:8px;padding:8px 10px;background:rgba(217,164,6,0.08);border:1px solid rgba(217,164,6,0.25);border-radius:8px;font-size:12px;color:var(--t2);line-height:1.5"><i data-lucide="arrow-up-circle" class="lc" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;color:#caa006"></i>${esc(ticketInfo.overrideNota)}</div>`:'';
     ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
       <div>${chipsHtml}<div class="legendaria-chips-slot"></div></div>
+      ${overrideNotaHtml}
       ${bBtn}
     </div>`;
   } else {
