@@ -1718,7 +1718,7 @@ function loadBoletosEnvMap(){
       var d=doc.data();
       var correoKey=d.correo||doc.id;
       boletosEnvMap[correoKey]=d.enviado===true;
-      if(d.tipoBoleto) boletoOverrideMap[correoKey]={tipo:d.tipoBoleto, nota:d.notaUpgrade||''};
+      if(d.tipoBoleto) boletoOverrideMap[correoKey]={tipo:d.tipoBoleto, nota:d.notaUpgrade||'', cantidad:d.cantidadBoleto||''};
     });
     // Re-renderizar lista si ya hay datos cargados
     if(filtered.length) go();
