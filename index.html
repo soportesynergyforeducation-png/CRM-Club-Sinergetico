@@ -2488,11 +2488,11 @@ function getTicketInfo(c, finAccesoStr){
   var override=boletoOverrideMap[c.correo];
   if(override&&override.tipo==='VIP'){
     chips=chips.map(function(ch){
-      return ch.label.indexOf('GRAL')>=0 ? {label:ch.label.replace('GRAL','VIP'), value:ch.value} : ch;
+      return ch.label.indexOf('GRAL')>=0 ? {label:ch.label.replace('GRAL','VIP'), value:override.cantidad||ch.value} : ch;
     });
   } else if(override&&override.tipo==='BLACK'){
     chips=chips.map(function(ch){
-      return ch.label.indexOf('GRAL')>=0||ch.label.indexOf('VIP')>=0 ? {label:'BLACK', value:ch.value} : ch;
+      return ch.label.indexOf('GRAL')>=0||ch.label.indexOf('VIP')>=0 ? {label:'BLACK', value:override.cantidad||ch.value} : ch;
     });
   }
 
