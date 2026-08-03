@@ -2382,7 +2382,7 @@ async function loadWebinarMap(){
 // ── BOLETOS SYNERGY: inventario por evento + duración de membresía ──
 async function loadTicketsTable(){
   try{
-    var cached=localStorage.getItem('crm_tickets_cache_v3');
+    var cached=localStorage.getItem('crm_tickets_cache_v4');
     var cachedTs=parseInt(localStorage.getItem('crm_tickets_cache_ts')||'0');
     var horas=(Date.now()-cachedTs)/3600000;
     if(cached&&horas<24){ ticketsByEvent=JSON.parse(cached); return; }
@@ -2422,7 +2422,7 @@ async function loadTicketsTable(){
     });
     ticketsByEvent=map;
     try{
-      localStorage.setItem('crm_tickets_cache_v3', JSON.stringify(map));
+      localStorage.setItem('crm_tickets_cache_v4', JSON.stringify(map));
       localStorage.setItem('crm_tickets_cache_ts', Date.now().toString());
     }catch(e){}
   }catch(e){ console.warn('loadTicketsTable error:', e.message); }
