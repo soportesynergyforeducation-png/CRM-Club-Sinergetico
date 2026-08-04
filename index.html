@@ -634,7 +634,10 @@
   .ch-line .lc{width:13px;height:13px;flex-shrink:0}
   .ch-line a{color:var(--acc);text-decoration:none}
   .ch-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .ch-ticket-desk{display:block;flex:1;min-width:230px;max-width:340px}
+  .ch-ticket-desk{display:block;flex:1;min-width:230px;max-width:520px}
+  .ticket-card-row{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .ticket-card-row .ticket-chips-col{flex-shrink:0}
+  .ticket-card-row .ticket-note-col{flex:1;min-width:180px}
   .ch-ticket-desk .info-card{padding:10px 12px}
   .ch-ticket-mob{display:none}
   @media(max-width:768px){
@@ -1232,23 +1235,28 @@
   .dash-wrapper{overflow:hidden;max-height:0;transition:max-height .3s cubic-bezier(.4,0,.2,1),opacity .25s;opacity:0}
   .dash-wrapper.open{max-height:400px;opacity:1}
 
-  /* ── MODO LECTOR: ocultar/desactivar todo lo que escribe datos ── */
-  body.lector-mode .addbtn,
-  body.lector-mode .mbb-add,
-  body.lector-mode .telbtn,
-  body.lector-mode .mbb-tel,
-  body.lector-mode #edit-toggle,
+  /* ── MODO SOLO LECTURA (admin y lector): ocultar/desactivar todo lo que escribe datos ── */
+  body.readonly-mode .addbtn,
+  body.readonly-mode .mbb-add,
+  body.readonly-mode .telbtn,
+  body.readonly-mode .mbb-tel,
+  body.readonly-mode #edit-toggle,
+  body.readonly-mode #presence-wrapper,
+  body.readonly-mode #notif-wrapper,
+  body.readonly-mode .ns,
+  body.readonly-mode #syncBtn,
+  body.readonly-mode #ss,
+  body.readonly-mode #rt-status,
+  body.readonly-mode .sf > .sbtn[onclick="openConfig()"]{display:none!important}
+
+  /* ── MODO LECTOR (adicional): solo ve la lista de clientes, sin dashboard ni exportar ── */
   body.lector-mode #page-dashboard,
-  body.lector-mode #presence-wrapper,
-  body.lector-mode #notif-wrapper,
-  body.lector-mode .ns,
-  body.lector-mode #syncBtn,
-  body.lector-mode #ss,
-  body.lector-mode #rt-status,
-  body.lector-mode .sf > .sbtn[onclick="openConfig()"],
-  body.lector-mode .ni:not(#nav-clientes),
   body.lector-mode #expBtn,
-  body.lector-mode .mbb-exp{display:none!important}
+  body.lector-mode .mbb-exp,
+  body.lector-mode .ni:not(#nav-clientes){display:none!important}
+
+  /* ── MODO ADMIN (adicional): oculta filtros rápidos y herramientas, deja Dashboard + Clientes ── */
+  body.admin-mode .ni:not(#nav-dashboard):not(#nav-clientes){display:none!important}
 
   /* ── ACCESS GATE (onboarding split-screen) ── */
   .ag-wrap{position:fixed;inset:0;z-index:10000;display:flex;background:#070c16;font-family:var(--font,system-ui)}
@@ -1316,7 +1324,7 @@
       <p>Renovaciones, seguimiento y comunicación con tus miembros, todo en un solo lugar.</p>
       <ul>
         <li>Seguimiento de membresías en tiempo real</li>
-        <li>Control de acceso por roles (admin / vendedor)</li>
+        <li>Control de acceso por roles (propietario / admin / vendedor)</li>
         <li>Registro de quién entra y cuándo</li>
       </ul>
     </div>
@@ -1690,18 +1698,35 @@ async function initFirebaseRT(){
   } catch(e){ console.warn('Firebase RT error:', e); setRTStatus(false); }
 }
 
+// ── OVERRIDE MANUAL DE TIPO DE BOLETO (ej. upgrades General→VIP) ──
+// Los chips de "Boletos Synergy" se calculan por evento+membresía y son
+// compartidos por todos los asistentes del mismo evento. boletoOverrideMap
+// permite anotar, por contacto individual, que su boleto real es distinto
+// (ej. hizo upgrade a VIP) sin afectar a los demás del mismo evento.
+// Se guarda dentro de la misma colección Firestore "boletos_env" (campos
+// tipoBoleto/notaUpgrade) porque las reglas de seguridad ya la permiten;
+// crear una colección nueva ("boletos_override") queda bloqueada por esas
+// reglas y requeriría editarlas en la consola de Firebase.
+var boletoOverrideMap={}; // correo -> {tipo:'VIP'|'BLACK', nota:''}
+
 function loadBoletosEnvMap(){
   if(!crmDB) return;
   crmDB.collection('boletos_env').get().then(function(snap){
     boletosEnvMap={};
-    snap.forEach(function(doc){ boletosEnvMap[doc.id]=doc.data().enviado===true; });
+    boletoOverrideMap={};
+    snap.forEach(function(doc){
+      var d=doc.data();
+      var correoKey=d.correo||doc.id;
+      boletosEnvMap[correoKey]=d.enviado===true;
+      if(d.tipoBoleto) boletoOverrideMap[correoKey]={tipo:d.tipoBoleto, nota:d.notaUpgrade||'', cantidad:d.cantidadBoleto||'', gralCantidad:d.gralCantidad||'', vipCantidad:d.vipCantidad||'', blackCantidad:d.blackCantidad||''};
+    });
     // Re-renderizar lista si ya hay datos cargados
     if(filtered.length) go();
   }).catch(function(e){ console.warn('boletos_env load error',e); });
 }
 
 async function toggleBoletoEnv(correo, btn){
-  if(isLector()){toast('⚠ Modo lectura');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura');return;}
   if(!crmDB){toast('⚠ Firebase no disponible');return;}
   var docId=correo.replace(/\./g,'_');
   var nuevoVal=!boletosEnvMap[correo];
@@ -2096,7 +2121,7 @@ function togglePSrc(i){
 }
 
 function removePSrc(i){
-  if(isLector()){toast('⚠ Modo lectura: no puedes eliminar fuentes');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes eliminar fuentes');return;}
   var allSrc=getAllPhoneSources();var s=allSrc[i];if(s&&s.fixed){toast('⚠ Esta fuente es fija y no se puede eliminar');return;}var ui=extraPhoneSources.indexOf(s);if(ui>=0)extraPhoneSources.splice(ui,1);
   if(s){clearPhoneCache(s.id);}
   savePhoneSources(); _refreshTelSrcUI();
@@ -2109,7 +2134,7 @@ function showAddSrcForm(){
 }
 
 function addSrcFromForm(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes agregar fuentes');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes agregar fuentes');return;}
   var label=(document.getElementById('src-label').value||'').trim();
   var sheetRaw=(document.getElementById('src-sheet').value||'').trim();
   var tab=(document.getElementById('src-tab').value||'').trim();
@@ -2321,7 +2346,8 @@ async function loadWebinarMap(){
   var presSources=[
     {id:'pres-usa',   label:'Presenciales USA',  sheetId:'1voYi5PDO3FMIKs8J1WoRMJ2XlZepu1rFMDXnZPa9sVE'},
     {id:'pres-mx',    label:'Presenciales MX',   sheetId:'1azTlHS1JbkfZdCi1YfGqmd_3yZpituCB5N1Gg2gkIjU'},
-    {id:'pres-mx-2',  label:'Presenciales MX 2', sheetId:'1bs26n-MM8242zefTTC3mvaa7E7DmDDoiJjy3ZHHZaWI'}
+    {id:'pres-mx-2',  label:'Presenciales MX 2', sheetId:'1bs26n-MM8242zefTTC3mvaa7E7DmDDoiJjy3ZHHZaWI'},
+    {id:'pres-reynosa', label:'Presenciales Reynosa', sheetId:'1PpbdtRqAw7DRwcOOJtV0Posm-7xh8cDmS77FZPzRRzY'}
   ];
   for(var pi=0;pi<presSources.length;pi++){
     var ps=presSources[pi];
@@ -2376,7 +2402,7 @@ async function loadWebinarMap(){
 // ── BOLETOS SYNERGY: inventario por evento + duración de membresía ──
 async function loadTicketsTable(){
   try{
-    var cached=localStorage.getItem('crm_tickets_cache_v3');
+    var cached=localStorage.getItem('crm_tickets_cache_v4');
     var cachedTs=parseInt(localStorage.getItem('crm_tickets_cache_ts')||'0');
     var horas=(Date.now()-cachedTs)/3600000;
     if(cached&&horas<24){ ticketsByEvent=JSON.parse(cached); return; }
@@ -2416,7 +2442,7 @@ async function loadTicketsTable(){
     });
     ticketsByEvent=map;
     try{
-      localStorage.setItem('crm_tickets_cache_v3', JSON.stringify(map));
+      localStorage.setItem('crm_tickets_cache_v4', JSON.stringify(map));
       localStorage.setItem('crm_tickets_cache_ts', Date.now().toString());
     }catch(e){}
   }catch(e){ console.warn('loadTicketsTable error:', e.message); }
@@ -2454,7 +2480,35 @@ function getTicketInfo(c, finAccesoStr){
     });
   }
   if(row.black) chips.push({label:'BLACK', value:row.black});
-  return {active:true, found:true, dur:dur, chips:chips};
+
+  // Override manual por contacto (Firestore: boletos_override) — permite
+  // reflejar upgrades individuales (ej. General→VIP) sin afectar a otros
+  // asistentes del mismo evento, ya que los chips normalmente se calculan
+  // por evento+membresía y son compartidos por todos los del evento.
+  var override=boletoOverrideMap[c.correo];
+  if(override&&override.tipo==='VIP'){
+    chips=chips.map(function(ch){
+      return ch.label.indexOf('GRAL')>=0 ? {label:ch.label.replace('GRAL','VIP'), value:override.cantidad||ch.value} : ch;
+    });
+  } else if(override&&override.tipo==='BLACK'){
+    chips=chips.map(function(ch){
+      return ch.label.indexOf('GRAL')>=0||ch.label.indexOf('VIP')>=0 ? {label:'BLACK', value:override.cantidad||ch.value} : ch;
+    });
+  } else if(override&&override.tipo==='MIXTO'){
+    // Parte de sus boletos GRAL hizo upgrade (a VIP y/o BLACK), el resto sigue en GRAL
+    var gralChip=chips.find(function(ch){return ch.label.indexOf('GRAL')>=0;});
+    chips=chips.map(function(ch){
+      return ch.label.indexOf('GRAL')>=0 ? {label:ch.label, value:override.gralCantidad||ch.value} : ch;
+    });
+    if(gralChip&&override.vipCantidad){
+      chips.push({label:gralChip.label.replace('GRAL','VIP'), value:override.vipCantidad});
+    }
+    if(override.blackCantidad){
+      chips.push({label:'BLACK', value:override.blackCantidad});
+    }
+  }
+
+  return {active:true, found:true, dur:dur, chips:chips, overrideNota:override?override.nota:''};
 }
 
 // ── SYNC SILENCIOSO ──
@@ -3012,7 +3066,7 @@ function det(i){
   }
 
   const writerReady=!!WRITER_URL;
-  const lector=isLector();
+  const lector=isReadOnly();
 
   // ── Estado calculado para Resumen / banner / pasos ──
   const dFinClub=parseDate(finAccesoStr);
@@ -3066,9 +3120,13 @@ function det(i){
       :`<span class="sk-n">Sin boletos asignados para su duración de membresía</span>`;
     const bEnv=boletosEnvMap[c.correo];
     const bBtn=`<button type="button" class="boletos-env-btn" data-correo="${esc(c.correo)}" style="display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px solid ${bEnv?'rgba(22,163,74,.4)':'var(--bdr2)'};background:${bEnv?'rgba(22,163,74,.1)':'transparent'};color:${bEnv?'var(--ok)':'var(--t3)'};font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${bEnv?'Boletos enviados':'Marcar como enviados'}</button>`;
+    const overrideNotaHtml=ticketInfo.overrideNota?`<div class="ticket-note-col" style="padding:8px 10px;background:rgba(217,164,6,0.08);border:1px solid rgba(217,164,6,0.25);border-radius:8px;font-size:12px;color:var(--t2);line-height:1.5"><i data-lucide="arrow-up-circle" class="lc" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;color:#caa006"></i>${esc(ticketInfo.overrideNota)}</div>`:'';
     ticketBlock=`<div class="info-card">
       <div class="info-card-h"><span><i data-lucide="ticket" class="lc"></i> Boletos Synergy — ${esc(c.evento)||'evento'}</span></div>
-      <div>${chipsHtml}<div class="legendaria-chips-slot"></div></div>
+      <div class="ticket-card-row">
+        <div class="ticket-chips-col">${chipsHtml}<div class="legendaria-chips-slot"></div></div>
+        ${overrideNotaHtml}
+      </div>
       ${bBtn}
     </div>`;
   } else {
@@ -3365,7 +3423,7 @@ function det(i){
 }
 
 function toggleEditMode(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes editar contactos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes editar contactos');return;}
   const panel=document.getElementById('dc');
   const btn=document.getElementById('edit-toggle');
   const isEditing=panel.classList.contains('edit-mode');
@@ -3386,7 +3444,7 @@ function toggleEditMode(){
 }
 
 async function guardarCambios(correo){
-  if(isLector()){toast('⚠ Modo lectura: no puedes guardar cambios');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes guardar cambios');return;}
   if(!WRITER_URL){
     toast('⚠ Configura WRITER_URL primero');
     return;
@@ -3458,7 +3516,7 @@ function cl(id){document.getElementById(id).classList.remove('show');}
 function ovClick(e,id){if(e.target.id===id)cl(id);}
 
 function openAdd(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
   document.getElementById('ac').innerHTML=`
     <button class="pc" onclick="cl('ap')">✕</button>
     <div style="font-size:17px;font-weight:700;color:var(--t1);margin-bottom:18px;letter-spacing:-.2px">Agregar contacto</div>
@@ -3480,7 +3538,7 @@ function openAdd(){
 }
 
 function addC(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes agregar contactos');return;}
   const n=document.getElementById('nn').value.trim(),e=document.getElementById('ne').value.trim();
   if(!n||!e){toast('⚠ Nombre y correo requeridos');return;}
   all.unshift({id:Date.now().toString(),nombre:n,correo:e.toLowerCase(),
@@ -4018,7 +4076,7 @@ function telSwitchTab(tab){
 }
 
 async function insertTelResults(){
-  if(isLector()){toast('⚠ Modo lectura: no puedes insertar teléfonos');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes insertar teléfonos');return;}
   _cancelAutoInsert();
   var map = window._telInsertMap || {};
   // Filtrar solo los que tienen teléfono real (no 'x')
@@ -4700,7 +4758,7 @@ function _calcTipoMemPreview(mem, evento){
 }
 
 async function confirmarSkoolSync(soloConMem){
-  if(isLector()){toast('⚠ Modo lectura: no puedes sincronizar a Skool');return;}
+  if(isReadOnly()){toast('⚠ Modo lectura: no puedes sincronizar a Skool');return;}
   var lista=soloConMem
     ?_skoolSyncPendientes.filter(function(p){return p.membresia;})
     :_skoolSyncPendientes;
@@ -4789,20 +4847,25 @@ function setRTStatus(on){
   }
 }
 
-// ── ACCESO POR ROL (admin / lector) ──
+// ── ACCESO POR ROL (propietario / admin / lector) ──
 // Cambia estos códigos por los que quieras usar
-var ACCESS_CODES={ 'CS-ADMIN-2026':'admin', 'CS-LECTOR-2026':'lector' };
+var ACCESS_CODES={ 'CS-PROPIETARIO-2026':'propietario', 'CS-ADMIN-2026':'admin', 'CS-LECTOR-2026':'lector' };
 
+function isOwner(){ return localStorage.getItem('crm_role')==='propietario'; }
 function isLector(){ return localStorage.getItem('crm_role')==='lector'; }
+// Admin y lector no pueden editar nada; solo el propietario tiene acceso de escritura.
+function isReadOnly(){ var r=localStorage.getItem('crm_role'); return r==='admin'||r==='lector'; }
 
 function initialsOf(name){
   return (name||'?').trim().split(/\s+/).map(function(w){return w[0]||'';}).slice(0,2).join('').toUpperCase();
 }
 
-function roleLabel(role){ return role==='admin'?'Admin':'Vendedor'; }
+function roleLabel(role){ if(role==='propietario') return 'Propietario'; if(role==='admin') return 'Admin'; return 'Vendedor'; }
 
 function applyRoleUI(){
   document.body.classList.toggle('lector-mode', isLector());
+  document.body.classList.toggle('admin-mode', localStorage.getItem('crm_role')==='admin');
+  document.body.classList.toggle('readonly-mode', isReadOnly());
   renderUserChips();
   if(isLector() && typeof switchPage==='function'){ switchPage('clientes'); }
 }
@@ -4851,7 +4914,7 @@ function checkAccessCode(){
   try{
     var role=localStorage.getItem('crm_role');
     var name=localStorage.getItem('crm_username');
-    if((role==='admin'||role==='lector')&&name){
+    if((role==='propietario'||role==='admin'||role==='lector')&&name){
       document.getElementById('access-gate').style.display='none';
     }
   }catch(e){}
