@@ -151,6 +151,14 @@ export default async function handler(req) {
 
     if (!fila) return json({ existe: false });
 
+    if (searchParams.get('debug') === '1') {
+      return json({
+        rawInscripcion: gv(fila, map, 'inscripcion'),
+        rawFinAcceso: gv(fila, map, 'finAcceso'),
+        rawStatus: gv(fila, map, 'status'),
+      });
+    }
+
     const status = gv(fila, map, 'status').trim().toUpperCase();
     const fin = finAccesoEfectivo(gv(fila, map, 'finAcceso'), gv(fila, map, 'inscripcion'));
     const hoy = new Date();
