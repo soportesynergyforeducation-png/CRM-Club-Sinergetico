@@ -97,11 +97,47 @@ function ultimos10(valor) {
   return digitos.length >= 10 ? digitos.slice(-10) : '';
 }
 
-function parseDate(str) {
-  if (!str) return null;
-  const s = str.toString().trim();
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+// Portado tal cual de la función parseDate() de index.html para leer
+// exactamente los mismos formatos que usa el sheet (con hora pegada,
+// año de 2 dígitos, serial de Google Sheets, DD/MM legacy, etc.)
+function parseDate(s) {
+  if (!s) return null;
+  s = s.toString().trim();
+  const serial = parseInt(s, 10);
+  if (!isNaN(serial) && serial > 40000 && serial < 60000) {
+    const d = new Date(1899, 11, 30);
+    d.setDate(d.getDate() + serial);
+    return d;
+  }
+  let m;
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+\d{1,2}:\d{2}/);
+  if (m) {
+    let y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+    const mo = parseInt(m[1], 10) - 1;
+    const dy = parseInt(m[2], 10);
+    if (parseInt(m[1], 10) <= 12 && parseInt(m[2], 10) <= 31) {
+      return new Date(y, mo, dy);
+    }
+  }
+  m = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (m) return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+  m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+  if (m) {
+    let y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+    const a = parseInt(m[1], 10);
+    const b = parseInt(m[2], 10);
+    if (a > 12) return new Date(y, b - 1, a);
+    return new Date(y, a - 1, b);
+  }
+  const meses = { ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5, jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11 };
+  m = s.toLowerCase().match(/(\d{1,2})[/\-\s]([a-z]{3})[/\-\s](\d{2,4})/);
+  if (m) {
+    let y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+    return new Date(y, meses[m[2]] || 0, parseInt(m[1], 10));
+  }
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -150,14 +186,6 @@ export default async function handler(req) {
     }
 
     if (!fila) return json({ existe: false });
-
-    if (searchParams.get('debug') === '1') {
-      return json({
-        rawInscripcion: gv(fila, map, 'inscripcion'),
-        rawFinAcceso: gv(fila, map, 'finAcceso'),
-        rawStatus: gv(fila, map, 'status'),
-      });
-    }
 
     const status = gv(fila, map, 'status').trim().toUpperCase();
     const fin = finAccesoEfectivo(gv(fila, map, 'finAcceso'), gv(fila, map, 'inscripcion'));
