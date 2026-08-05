@@ -125,15 +125,7 @@ export default async function handler(req) {
   const telefonoBuscado = searchParams.get('telefono') || '';
 
   const apiKey = req.headers.get('x-api-key');
-  const envKey = process.env.CLUB_SINERGETICO_API_KEY;
-  if (searchParams.get('debug') === '1') {
-    return json({
-      recibidoLen: apiKey ? apiKey.length : 0,
-      envLen: envKey ? envKey.length : 0,
-      envDefinida: !!envKey,
-      iguales: apiKey === envKey,
-    });
-  }
+  const envKey = (process.env.CLUB_SINERGETICO_API_KEY || '').trim();
   if (!apiKey || apiKey !== envKey) {
     return json({ error: 'No autorizado' }, 401);
   }
