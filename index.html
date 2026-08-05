@@ -2468,7 +2468,19 @@ function getTicketInfo(c, finAccesoStr){
   }
 
   var row=ticketsByEvent[eventoKey];
-  if(!row) return {active:true, found:false};
+  if(!row){
+    // El evento no está en la tabla de boletos (ej. eventos nuevos como "VIP-SU"),
+    // pero si el contacto tiene un override manual, igual mostramos su chip.
+    var ov=boletoOverrideMap[c.correo];
+    if(ov&&(ov.tipo==='VIP'||ov.tipo==='BLACK'||ov.tipo==='GRAL')){
+      var infoNR=getCountryInfo(c.pais);
+      var kNR=(infoNR&&infoNR.label||c.pais||'').toLowerCase();
+      var esMx=kNR.indexOf('méxico')>=0||kNR.indexOf('mexico')>=0;
+      var labelNR=ov.tipo==='BLACK'?'BLACK':ov.tipo==='GRAL'?(esMx?'GRAL MX':'GRAL US'):(esMx?'VIP MX':'VIP US');
+      return {active:true, found:true, dur:null, chips:[{label:labelNR, value:ov.cantidad||'1'}], overrideNota:ov.nota||''};
+    }
+    return {active:true, found:false};
+  }
   var memRaw=(c.memTipo||c.skMem||'').toString().toLowerCase();
   // Sin membresía Skool registrada → usar duración de 3 Meses por defecto
   var dur=memRaw.includes('12')?'12':memRaw.includes('6')?'6':memRaw.includes('3')?'3':'3';
