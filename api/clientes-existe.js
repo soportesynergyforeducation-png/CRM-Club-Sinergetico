@@ -192,11 +192,13 @@ export default async function handler(req) {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const activo = status !== 'REVOCADO' && !!fin && fin >= hoy;
+    const inscripcion = parseDate(gv(fila, map, 'inscripcion'));
 
     return json({
       existe: true,
       status,
       finAcceso: fin ? fin.toISOString() : null,
+      inscripcion: inscripcion ? inscripcion.toISOString() : null,
       activo,
     });
   } catch (err) {
