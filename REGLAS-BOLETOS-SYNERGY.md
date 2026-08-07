@@ -51,6 +51,15 @@ si la fila tiene un valor en la columna BLACK → agregar chip "BLACK · {valor}
 
 Un cliente puede tener **más de un chip a la vez** (ej. GRAL MX y BLACK simultáneos si el evento así lo define).
 
+## 3.1 Casos especiales de nombre de evento fijo
+
+Algunos códigos de evento no representan un evento real con inventario propio, sino una categoría directa de boleto. Estos se resuelven por nombre exacto del evento, sin consultar la tabla de inventario, dando siempre **1 boleto**, eligiendo MX/US según el país del cliente:
+
+- `VIP-SU` → 1 boleto VIP (MX o US según país)
+- `GRAL-SU` → 1 boleto GENERAL (MX o US según país)
+
+Es la misma idea que el caso "Renovación" de la sección 4, pero disparado por el nombre del evento en vez de por el campo de acceso.
+
 ## 4. Caso especial: Acceso = "Renovación"
 
 Si el campo "Acceso a plataforma" contiene la palabra "renovación" (en cualquier variante/mayúscula), **se ignora la tabla de inventario por evento** y se usa una regla fija basada solo en el país:

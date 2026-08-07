@@ -2454,6 +2454,17 @@ function getTicketInfo(c, finAccesoStr){
   var eventoKey=(c.evento||'').toString().trim().toLowerCase();
   var accesoKey=(c.acceso||'').toString().trim().toLowerCase();
 
+  // Casos especiales: eventos "VIP-SU" / "GRAL-SU" — no viven en la tabla de
+  // inventario por evento, siempre dan 1 boleto del tipo indicado en el nombre,
+  // usando el país del cliente para elegir MX/US.
+  if(eventoKey==='vip-su'||eventoKey==='gral-su'){
+    var infoSU=getCountryInfo(c.pais);
+    var kSU=(infoSU&&infoSU.label||c.pais||'').toLowerCase();
+    var esMxSU=kSU.indexOf('méxico')>=0||kSU.indexOf('mexico')>=0;
+    var labelSU=eventoKey==='vip-su'?(esMxSU?'VIP MX':'VIP US'):(esMxSU?'GRAL MX':'GRAL US');
+    return {active:true, found:true, dur:null, chips:[{label:labelSU, value:'1'}]};
+  }
+
   // Caso especial: Plataforma/Acceso = "Renovación" (en cualquiera de sus variantes) —
   // el boleto depende del país del cliente, no del evento ni de columnas por duración
   if(accesoKey.indexOf('renov')>=0){
